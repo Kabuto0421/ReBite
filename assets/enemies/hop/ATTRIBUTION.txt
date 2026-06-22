@@ -1,0 +1,7 @@
+Flying Tongue Monster Sprite Sheet
+
+Source: https://opengameart.org/content/flying-tongue-monster-sprite-sheet
+Author: dogchicken
+License: CC-BY 3.0
+
+Used for HopMonster. Original GIF frames were extracted to PNG and the source background color was keyed to transparency.

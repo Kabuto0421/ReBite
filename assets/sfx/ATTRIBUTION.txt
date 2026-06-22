@@ -1,0 +1,12 @@
+Sound effects in this directory were created and provided by the project owner.
+
+Files currently used by StageSfx.gd:
+- bite_hit.mp3
+- memory_tag_crack.mp3
+- hop_launch.wav
+- enemy_die.wav
+- skull_dash.wav
+- spike_hit.wav
+- action_break_block.wav
+
+No third-party sound library or sample attribution is claimed for these files.

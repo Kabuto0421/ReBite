@@ -1,0 +1,9 @@
+# Godot generated data
+.godot/
+
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
+# Local capture output
+visual-checks/

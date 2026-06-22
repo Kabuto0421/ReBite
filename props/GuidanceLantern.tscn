@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://br3q5g48c8vvv"]
+
+[ext_resource type="Script" uid="uid://c4prcl3mooqtf" path="res://scripts/stage/GuidanceLantern.gd" id="1"]
+
+[node name="GuidanceLantern" type="Node2D" unique_id=982280138]
+z_index = -9
+script = ExtResource("1")
+sway_enabled = null
+sway_angle = null
+sway_speed = null
+vertical_sway = null

@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://lv0aaoqdx8yx"]
+
+[ext_resource type="Script" uid="uid://4mq2hu8tok4u" path="res://scripts/stage/Stage10.gd" id="1_stage"]
+[ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="2_tiles"]
+[ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="3_part"]
+[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://entities/BossBoar.tscn" id="5_boss"]
+
+[node name="Stage10" type="Node2D" unique_id=381693630]
+script = ExtResource("1_stage")
+stage_display_name = "STAGE 10"
+goal_area_path = NodePath("")
+
+[node name="EditableGeometry" type="Node2D" parent="." unique_id=1496795502]
+
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry" unique_id=1919059937]
+z_index = -5
+script = ExtResource("2_tiles")
+
+[node name="Rect_ArenaFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1810277968]
+position = Vector2(40, 520)
+script = ExtResource("3_part")
+rect_name = "ArenaFloor"
+size = Vector2(1200, 32)
+
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1830689754]
+position = Vector2(40, 72)
+script = ExtResource("3_part")
+rect_name = "LeftWall"
+size = Vector2(32, 480)
+
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=798961398]
+position = Vector2(1208, 72)
+script = ExtResource("3_part")
+rect_name = "RightWall"
+size = Vector2(32, 480)
+
+[node name="Rect_Ceiling" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1226057318]
+position = Vector2(40, 72)
+script = ExtResource("3_part")
+rect_name = "Ceiling"
+size = Vector2(1200, 32)
+
+[node name="Rect_LeftGimmickBase" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=24943236]
+position = Vector2(205, 408)
+script = ExtResource("3_part")
+rect_name = "LeftGimmickBase"
+size = Vector2(176, 32)
+
+[node name="Rect_RightGimmickBase" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1301988869]
+position = Vector2(865, 376)
+script = ExtResource("3_part")
+rect_name = "RightGimmickBase"
+size = Vector2(176, 32)
+
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry" unique_id=637388329]
+
+[node name="Gimmicks" type="Node2D" parent="." unique_id=340871541]
+editor_description = "ボスへ3回ダメージを与えるギミックをここへ追加する。"
+
+[node name="Player" parent="." unique_id=1243346886 instance=ExtResource("4_player")]
+position = Vector2(180, 520)
+jump_velocity = -520.0
+
+[node name="BoarBoss" parent="." unique_id=134607443 instance=ExtResource("5_boss")]
+position = Vector2(560, 520)

@@ -1,0 +1,162 @@
+[gd_scene format=3 uid="uid://bad57a8om6mnh"]
+
+[ext_resource type="Script" uid="uid://ctcd6qttfypnw" path="res://scripts/stage/Stage4.gd" id="1"]
+[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://entities/HopMonster.tscn" id="3"]
+[ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="4"]
+[ext_resource type="Script" uid="uid://16dn6qppf0rc" path="res://scripts/stage/RidePlatform.gd" id="5"]
+[ext_resource type="Script" uid="uid://brt8b0v7rxlu0" path="res://scripts/stage/GoalArea.gd" id="6"]
+[ext_resource type="PackedScene" path="res://props/GuidanceGoalSign.tscn" id="7_goal_sign"]
+[ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="TileRectPart"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_goal"]
+size = Vector2(96, 56)
+
+[node name="Stage4" type="Node2D" unique_id=1060201247]
+script = ExtResource("1")
+next_stage_path = "res://stage/Stage5.tscn"
+
+[node name="EditableGeometry" type="Node2D" parent="." unique_id=1718535010]
+
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry" unique_id=2083554003]
+z_index = -5
+script = ExtResource("4")
+
+[node name="Rect_OuterFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1225439136]
+position = Vector2(40, 424)
+script = ExtResource("TileRectPart")
+rect_name = "OuterFloor"
+size = Vector2(1160, 32)
+
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=312262710]
+position = Vector2(40, -82)
+script = ExtResource("TileRectPart")
+rect_name = "LeftWall"
+size = Vector2(32, 540)
+
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=173761988]
+position = Vector2(1168, -176)
+script = ExtResource("TileRectPart")
+rect_name = "RightWall"
+size = Vector2(32, 632)
+
+[node name="Rect_CeilingLeft" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=937216377]
+position = Vector2(40, -85)
+script = ExtResource("TileRectPart")
+rect_name = "CeilingLeft"
+size = Vector2(200, 32)
+
+[node name="Rect_CeilingRight" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=246953185]
+position = Vector2(704, -176)
+script = ExtResource("TileRectPart")
+rect_name = "CeilingRight"
+size = Vector2(496, 32)
+
+[node name="Rect_StartPlatform" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=2071481299]
+position = Vector2(129, 363)
+script = ExtResource("TileRectPart")
+rect_name = "StartPlatform"
+size = Vector2(700, 32)
+
+[node name="Rect_HopBasePlatform" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1091093654]
+position = Vector2(516, 360)
+script = ExtResource("TileRectPart")
+rect_name = "HopBasePlatform"
+size = Vector2(232, 32)
+
+[node name="Rect_SecondHopBasePlatform" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1351558845]
+position = Vector2(321, -232)
+script = ExtResource("TileRectPart")
+rect_name = "SecondHopBasePlatform"
+size = Vector2(232, 32)
+
+[node name="Rect_GoalFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1277299365]
+position = Vector2(715, -721)
+script = ExtResource("TileRectPart")
+rect_name = "GoalFloor"
+size = Vector2(232, 32)
+
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry" unique_id=1020992677]
+
+[node name="GuidanceMarkers" type="Node2D" parent="." unique_id=486005363]
+
+[node name="GoalSign_FirstLift" parent="GuidanceMarkers" unique_id=2108810375 instance=ExtResource("7_goal_sign")]
+position = Vector2(306, 177)
+opacity = 0.6
+
+[node name="GoalSign_FinalApproach2" parent="GuidanceMarkers" unique_id=1380737154 instance=ExtResource("7_goal_sign")]
+position = Vector2(232, -308)
+sign_type = 1
+opacity = 0.6
+
+[node name="GoalSign_SecondLift" parent="GuidanceMarkers" unique_id=1109576512 instance=ExtResource("7_goal_sign")]
+position = Vector2(670, -309)
+opacity = 0.6
+
+[node name="GoalSign_FinalApproach" parent="GuidanceMarkers" unique_id=1228442095 instance=ExtResource("7_goal_sign")]
+position = Vector2(671, -765)
+sign_type = 1
+opacity = 0.6
+
+[node name="HopMonster" parent="." unique_id=903462433 instance=ExtResource("3")]
+position = Vector2(431, 357)
+hop_velocity = -370.0
+
+[node name="RidePlatform" type="AnimatableBody2D" parent="." unique_id=841407545]
+z_index = -4
+collision_mask = 0
+script = ExtResource("5")
+target_path = NodePath("../HopMonster")
+offset = Vector2(-64, -104)
+
+[node name="HopMonster2" parent="." unique_id=1898087997 instance=ExtResource("3")]
+position = Vector2(542, -274)
+hop_velocity = -370.0
+
+[node name="HopMonster3" parent="." unique_id=351175075 instance=ExtResource("3")]
+position = Vector2(114, -106)
+hop_velocity = -370.0
+
+[node name="RidePlatform2" type="AnimatableBody2D" parent="." unique_id=1765647433]
+z_index = -4
+collision_mask = 0
+script = ExtResource("5")
+target_path = NodePath("../HopMonster2")
+offset = Vector2(-64, -104)
+
+[node name="RidePlatform3" type="AnimatableBody2D" parent="." unique_id=1351643905]
+z_index = -4
+collision_mask = 0
+script = ExtResource("5")
+target_path = NodePath("../HopMonster3")
+offset = Vector2(-64, -104)
+
+[node name="Player" parent="." unique_id=1567711364 instance=ExtResource("2")]
+position = Vector2(240, 320)
+jump_velocity = -520.0
+
+[node name="GoalArea" type="Area2D" parent="." unique_id=1925474879]
+z_index = 4
+position = Vector2(788, -785)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalArea" unique_id=855083326]
+position = Vector2(48, 28)
+shape = SubResource("RectangleShape2D_goal")
+
+[node name="GoalLabel" type="Label" parent="GoalArea" unique_id=1629035035]
+z_index = 1
+offset_top = 12.0
+offset_right = 96.0
+offset_bottom = 44.0
+theme_override_colors/font_color = Color(1, 0.92, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+text = "GOAL"
+horizontal_alignment = 1
+vertical_alignment = 1

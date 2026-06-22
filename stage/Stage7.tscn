@@ -1,0 +1,163 @@
+[gd_scene format=3 uid="uid://pgj2trgrdx7i"]
+
+[ext_resource type="Script" uid="uid://ckytukjbjedde" path="res://scripts/stage/Stage7.gd" id="1_73k03"]
+[ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="2_qlk3r"]
+[ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="3_mj3f8"]
+[ext_resource type="Script" uid="uid://d3fj52yx8ghxs" path="res://scripts/stage/ActionBreakGroup.gd" id="4_exfmo"]
+[ext_resource type="Script" uid="uid://clk4sq46xloom" path="res://scripts/stage/EditableSpikes.gd" id="5_jwt43"]
+[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="6_3xv28"]
+[ext_resource type="PackedScene" path="res://entities/HopMonster.tscn" id="7_nu7ue"]
+[ext_resource type="PackedScene" path="res://entities/SkullMonster.tscn" id="8_iokre"]
+[ext_resource type="PackedScene" path="res://props/Rockfall.tscn" id="10_qlk3r"]
+
+[node name="Stage7" type="Node2D" unique_id=887467939]
+script = ExtResource("1_73k03")
+next_stage_path = "res://stage/Stage8.tscn"
+goal_area_path = NodePath("")
+
+[node name="EditableGeometry" type="Node2D" parent="." unique_id=1137470618]
+
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry" unique_id=132634958]
+z_index = -5
+script = ExtResource("2_qlk3r")
+
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1862548799]
+position = Vector2(175, 43.000008)
+rotation = -0.7568294
+script = ExtResource("3_mj3f8")
+rect_name = "LeftWall"
+size = Vector2(32, 270)
+
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1545920930]
+position = Vector2(1066, -96)
+script = ExtResource("3_mj3f8")
+rect_name = "RightWall"
+size = Vector2(32, 552)
+
+[node name="Rect_RightWall2" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=906791566]
+position = Vector2(906, 209)
+script = ExtResource("3_mj3f8")
+rect_name = "RightWall"
+size = Vector2(32, 70)
+
+[node name="Rect_RightWall3" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=977698233]
+position = Vector2(1037, 229)
+script = ExtResource("3_mj3f8")
+rect_name = "RightWall"
+size = Vector2(32, 70)
+
+[node name="Rect_Ceiling" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=744878483]
+position = Vector2(377, -8)
+script = ExtResource("3_mj3f8")
+rect_name = "Ceiling"
+size = Vector2(1656, 32)
+
+[node name="Rect_TopLaneA" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1328470126]
+position = Vector2(268, 178)
+script = ExtResource("3_mj3f8")
+rect_name = "TopLaneA"
+size = Vector2(640, 32)
+
+[node name="Rect_GoalFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=2027366157]
+position = Vector2(908, 277)
+script = ExtResource("3_mj3f8")
+rect_name = "GoalFloor"
+size = Vector2(130, 32)
+
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry" unique_id=180623697]
+
+[node name="ActionBreakGroup_GateA" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=2119225701]
+editor_description = "Skull Aの突進で消えるゲートと足場。"
+z_index = -5
+position = Vector2(-1, 0)
+script = ExtResource("4_exfmo")
+accepted_actions = Array[StringName]([&"dash"])
+blocks_enemy = true
+
+[node name="Rect_GateA" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateA" unique_id=1927801139]
+position = Vector2(349, -73)
+script = ExtResource("3_mj3f8")
+rect_name = "GateA"
+size = Vector2(32, 96)
+
+[node name="Rect_SkullFloorA" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateA" unique_id=307275743]
+position = Vector2(189, -8)
+script = ExtResource("3_mj3f8")
+rect_name = "SkullFloorA"
+size = Vector2(180, 32)
+
+[node name="ActionBreakGroup_GateB" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=1693990820]
+editor_description = "Skull Bの突進で消えるゲートと足場。"
+z_index = -5
+script = ExtResource("4_exfmo")
+accepted_actions = Array[StringName]([&"dash"])
+blocks_enemy = true
+
+[node name="Rect_GateB" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateB" unique_id=1640382127]
+position = Vector2(759, 116)
+script = ExtResource("3_mj3f8")
+rect_name = "GateB"
+size = Vector2(32, 60)
+
+[node name="Rect_SkullFloorB" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateB" unique_id=180551951]
+position = Vector2(760, 87)
+script = ExtResource("3_mj3f8")
+rect_name = "SkullFloorB"
+size = Vector2(90, 32)
+
+[node name="ActionBreakGroup_GateC" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=2033057446]
+editor_description = "Skull Cの突進で消える最後のゲートと足場。"
+z_index = -5
+script = ExtResource("4_exfmo")
+accepted_actions = Array[StringName]([&"dash"])
+blocks_enemy = true
+
+[node name="Rect_SkullFloorC" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateC" unique_id=29172844]
+position = Vector2(908, 80)
+script = ExtResource("3_mj3f8")
+rect_name = "SkullFloorC"
+size = Vector2(160, 32)
+
+[node name="Rect_SkullFloorC2" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateC" unique_id=1850080424]
+position = Vector2(907, 180)
+rotation = -1.5707964
+script = ExtResource("3_mj3f8")
+rect_name = "SkullFloorC"
+size = Vector2(70, 32)
+
+[node name="SpikePitA" type="Node2D" parent="EditableGeometry" unique_id=380989554]
+z_index = -3
+position = Vector2(1034, 216)
+rotation = -1.5707964
+script = ExtResource("5_jwt43")
+size = Vector2(70, 32)
+
+[node name="SpikePitC2" type="Node2D" parent="EditableGeometry" unique_id=1543881814]
+z_index = -3
+position = Vector2(866, 53)
+rotation = -3.134045
+script = ExtResource("5_jwt43")
+size = Vector2(110, 32)
+
+[node name="Player" parent="." unique_id=2096883827 instance=ExtResource("6_3xv28")]
+position = Vector2(760, -47)
+jump_velocity = -520.0
+
+[node name="HopMonster" parent="." unique_id=1675896635 instance=ExtResource("7_nu7ue")]
+position = Vector2(825, 173)
+hop_velocity = -370.0
+
+[node name="SkullMonsterA" parent="." unique_id=1594727805 instance=ExtResource("8_iokre")]
+position = Vector2(595, -30)
+
+[node name="SkullMonsterB" parent="." unique_id=190232737 instance=ExtResource("8_iokre")]
+position = Vector2(606, 159)
+
+[node name="SkullMonster" parent="." unique_id=1333638618 instance=ExtResource("8_iokre")]
+position = Vector2(689, 158)
+
+[node name="Rockfall" parent="." unique_id=1142235640 instance=ExtResource("10_qlk3r")]
+position = Vector2(304, -34)
+
+[node name="Rockfall2" parent="." unique_id=919159299 instance=ExtResource("10_qlk3r")]
+position = Vector2(964, 250)

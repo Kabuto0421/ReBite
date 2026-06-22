@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://qgynday13wo5"]
+
+[ext_resource type="Script" uid="uid://cqdl6aba0jenl" path="res://scripts/stage/Stage1.gd" id="1"]
+[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://entities/SkullMonster.tscn" id="3"]
+[ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/stage/TileRectPart.gd" id="TileRectPart"]
+
+[node name="Stage1" type="Node2D" unique_id=1022199102]
+script = ExtResource("1")
+next_stage_path = "res://stage/Stage2.tscn"
+
+[node name="EditableGeometry" type="Node2D" parent="."]
+
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry"]
+z_index = -5
+script = ExtResource("4")
+
+[node name="Rect_OuterFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(40, 360)
+script = ExtResource("TileRectPart")
+rect_name = "OuterFloor"
+size = Vector2(980, 32)
+
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(40, 96)
+script = ExtResource("TileRectPart")
+rect_name = "LeftWall"
+size = Vector2(32, 296)
+
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(988, 96)
+script = ExtResource("TileRectPart")
+rect_name = "RightWall"
+size = Vector2(32, 296)
+
+[node name="Rect_MemoryBiteStep" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(532, 304)
+script = ExtResource("TileRectPart")
+rect_name = "MemoryBiteStep"
+size = Vector2(128, 24)
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry"]
+
+[node name="Player" parent="." unique_id=259533907 instance=ExtResource("2")]
+position = Vector2(760, 330)
+
+[node name="SkullMonster" parent="." unique_id=953107928 instance=ExtResource("3")]
+position = Vector2(640, 330)

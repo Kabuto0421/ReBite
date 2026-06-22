@@ -1,0 +1,82 @@
+[gd_scene format=3 uid="uid://b6jfp4as3lg5b"]
+
+[ext_resource type="Script" path="res://scripts/stage/Stage3.gd" id="1"]
+[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://entities/HopMonster.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/stage/EditableTileGroup.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/stage/EditableSpikes.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/stage/TileRectPart.gd" id="TileRectPart"]
+
+[node name="Stage3" type="Node2D" unique_id=1209531801]
+script = ExtResource("1")
+next_stage_path = "res://stage/Stage4.tscn"
+
+[node name="EditableGeometry" type="Node2D" parent="." unique_id=504530435]
+
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry"]
+z_index = -5
+script = ExtResource("4")
+
+[node name="Rect_OuterFloor" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(40, 424)
+script = ExtResource("TileRectPart")
+rect_name = "OuterFloor"
+size = Vector2(1160, 32)
+
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(40, 72)
+script = ExtResource("TileRectPart")
+rect_name = "LeftWall"
+size = Vector2(32, 384)
+
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(1168, 72)
+script = ExtResource("TileRectPart")
+rect_name = "RightWall"
+size = Vector2(32, 384)
+
+[node name="Rect_Ceiling" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(40, 72)
+script = ExtResource("TileRectPart")
+rect_name = "Ceiling"
+size = Vector2(1160, 32)
+
+[node name="Rect_LowerHopPlatform" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(520, 360)
+script = ExtResource("TileRectPart")
+rect_name = "LowerHopPlatform"
+size = Vector2(240, 32)
+
+[node name="Rect_PlayerPlatform" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(640, 296)
+script = ExtResource("TileRectPart")
+rect_name = "PlayerPlatform"
+size = Vector2(280, 32)
+
+[node name="Rect_UpperLandingLeft" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(496, 168)
+script = ExtResource("TileRectPart")
+rect_name = "UpperLandingLeft"
+size = Vector2(64, 32)
+
+[node name="Rect_UpperLandingRight" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+position = Vector2(688, 168)
+script = ExtResource("TileRectPart")
+rect_name = "UpperLandingRight"
+size = Vector2(160, 32)
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry"]
+
+[node name="CeilingSpikes" type="Node2D" parent="EditableGeometry" unique_id=354809763]
+z_index = -3
+position = Vector2(560, 104)
+script = ExtResource("5")
+size = Vector2(128, 32)
+points_down = true
+
+[node name="Player" parent="." unique_id=709661866 instance=ExtResource("2")]
+position = Vector2(680, 266)
+jump_velocity = -520.0
+
+[node name="HopMonster" parent="." unique_id=689249378 instance=ExtResource("3")]
+position = Vector2(620, 328)
+hop_velocity = -370.0
