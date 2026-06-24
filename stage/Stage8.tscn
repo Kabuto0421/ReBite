@@ -12,7 +12,7 @@
 
 [node name="Stage8" type="Node2D" unique_id=887467939]
 script = ExtResource("1_nyahh")
-next_stage_path = "res://stage/Stage9.tscn"
+next_stage_path = "res://stage/Stage10.tscn"
 goal_area_path = NodePath("")
 
 [node name="EditableGeometry" type="Node2D" parent="." unique_id=1137470618]

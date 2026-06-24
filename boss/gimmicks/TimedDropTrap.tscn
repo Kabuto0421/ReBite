@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://b3h0yc26kpqy4"]
+
+[ext_resource type="Script" uid="uid://dwo05yy126qvp" path="res://scripts/boss/gimmicks/TimedDropTrap.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://br5d7i0ymbd0u" path="res://assets/boss/gimmicks/frames/timed_dropper_00.png" id="2_device"]
+[ext_resource type="Texture2D" uid="uid://bnu4lnjbaos7l" path="res://assets/boss/gimmicks/frames/rock_00.png" id="3_rock"]
+[ext_resource type="Texture2D" uid="uid://b3csspntlo1us" path="res://assets/boss/gimmicks/frames/landing_marker_00.png" id="4_marker"]
+
+[node name="TimedDropTrap" type="Node2D" unique_id=413559218]
+script = ExtResource("1_script")
+
+[node name="DeviceSprite" type="Sprite2D" parent="." unique_id=1865778568]
+z_index = 2
+texture_filter = 1
+scale = Vector2(1.6, 1.6)
+texture = ExtResource("2_device")
+
+[node name="RockSprite" type="Sprite2D" parent="." unique_id=152045928]
+z_index = 1
+texture_filter = 1
+position = Vector2(0, 18)
+scale = Vector2(2.2, 2.2)
+texture = ExtResource("3_rock")
+
+[node name="LandingMarker" type="Sprite2D" parent="." unique_id=1694181219]
+texture_filter = 1
+position = Vector2(0, 270)
+scale = Vector2(3, 3)
+texture = ExtResource("4_marker")

@@ -1,8 +1,7 @@
-memory_bite_loop.wav
+rebite_small_biter_bouncy_theme.ogg
+rebite_boar_intro_fanfare.ogg
+boar_boss_pressure_theme.ogg
 memory_bite_loop_02.wav
 
-Original generated 8-bit style loop for this project.
-Generated locally as a simple chiptune-style WAV using pulse, triangle, and noise waveforms.
-No third-party audio sample is embedded.
-
-memory_bite_loop_02.wav uses a C - Fm - Ab - G progression at BPM 140, with a restrained A-part ostinato and short lead fragments, a B-part lead-note/offbeat-snare break, an eight-note arpeggio, and an ostinato ending.
+Original music supplied by the project author on 2026-06-23.
+Converted from 44.1 kHz WAV source files to Ogg Vorbis for in-game use.

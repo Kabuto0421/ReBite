@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://m8tnd4tslbkr"]
+
+[ext_resource type="Script" uid="uid://gv0b0c6tb4oc" path="res://scripts/boss/gimmicks/FallingRockTrap.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://7bmakmyl122p" path="res://assets/boss/gimmicks/frames/support_00.png" id="2_support"]
+[ext_resource type="Texture2D" uid="uid://cwns2kemhaa2l" path="res://assets/boss/gimmicks/frames/hanging_rock_00.png" id="3_rock"]
+
+[sub_resource type="RectangleShape2D" id="SupportShape"]
+size = Vector2(152, 299.5)
+
+[node name="FallingRockTrap" type="AnimatableBody2D" unique_id=217270872]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="SupportSprite" type="Sprite2D" parent="." unique_id=766131242]
+texture_filter = 1
+position = Vector2(0, 50.000004)
+scale = Vector2(3.9900029, 4.6699977)
+texture = ExtResource("2_support")
+
+[node name="RockSprite" type="Sprite2D" parent="." unique_id=1500887318]
+z_index = 2
+texture_filter = 1
+position = Vector2(0, -94)
+scale = Vector2(1.35, 1.35)
+texture = ExtResource("3_rock")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=60736346]
+position = Vector2(-4, 115.25)
+shape = SubResource("SupportShape")

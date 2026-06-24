@@ -28,6 +28,7 @@ smash_impact_start = 0.42
 smash_impact_end = 0.78
 smash_hitbox_offset_x = 46.0
 recall_start_delay = 0.62
+replay_outline_size = 4.0
 
 [node name="Shadow" type="Polygon2D" parent="."]
 z_index = -2

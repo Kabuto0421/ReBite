@@ -30,12 +30,16 @@ func _run() -> void:
 	assert(player.pick_bite_target() == hop)
 
 	var recall_start_y: float = hop.global_position.y
-	player.state_machine.change_state(&"BiteLunge", null)
+	var bite_context: Dictionary = player.prepare_bite_context()
+	player.state_machine.change_state(&"BiteLunge", bite_context)
 	assert(player.bite_invulnerable)
-	await _settle_seconds(0.22)
+	assert(player.is_contact_immune_from(hop))
 	assert(hop.current_state_name() == &"Recalled")
 
-	await _settle_seconds(hop.recall_start_delay + 0.18)
+	await _settle_seconds(hop.recall_start_delay + 0.02)
+	var hop_material := hop.sprite.material as ShaderMaterial
+	assert((hop_material.get_shader_parameter("outline_color") as Color).is_equal_approx(hop.replay_outline_color))
+	await _settle_seconds(0.16)
 	assert(hop.current_state_name() == &"Dying")
 
 	print("HOP_MONSTER_CHECK_OK")

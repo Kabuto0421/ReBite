@@ -10,15 +10,20 @@ var committed_record: Resource
 var lunge_tween: Tween
 var replay_triggered := false
 
-func enter(_payload: Variant = null) -> void:
-	target = owner_node.pick_bite_target()
-	committed_record = null
-	replay_triggered = false
+# K入力時に固定された対象へ飛びつき、未固定時だけ従来探索へ戻す。
+func enter(payload: Variant = null) -> void:
+	var bite_context: Dictionary = payload if payload is Dictionary else {}
+	target = bite_context.get("target")
+	committed_record = bite_context.get("record") as Resource
+	replay_triggered = bool(bite_context.get("replay_started", false))
+	if not is_instance_valid(target):
+		target = owner_node.pick_bite_target()
+		committed_record = target.bite_commit_record() if target != null and target.has_method("bite_commit_record") else null
 	if target == null:
 		owner_node.bite_missed.emit()
 		transition_requested.emit(&"BiteRecover", null)
 		return
-	if target.has_method("bite_commit_record"):
+	if committed_record == null and target.has_method("bite_commit_record"):
 		committed_record = target.bite_commit_record()
 
 	owner_node.set_bite_invulnerable(true)
@@ -53,7 +58,11 @@ func _target_bite_position(target_node: Node) -> Vector2:
 	return tag_position + Vector2(-18.0 * owner_node.facing, 16.0)
 
 func _trigger_replay() -> void:
+	if is_instance_valid(target):
+		owner_node.bite_contact.emit(target)
 	if replay_triggered:
+		if is_instance_valid(target) and owner_node.has_method("grant_contact_immunity"):
+			owner_node.grant_contact_immunity(target)
 		return
 	replay_triggered = true
 	if not is_instance_valid(target):

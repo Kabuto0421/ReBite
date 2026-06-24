@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "name": "boar_dash",
+  "frame_size": {
+    "width": 537,
+    "height": 397
+  },
+  "frame_duration_ms": 100,
+  "loop": false,
+  "frames": [
+    {
+      "id": "boar_dash_01",
+      "file": "frames/boar_dash_01.png",
+      "source_frame": 1
+    },
+    {
+      "id": "boar_dash_02",
+      "file": "frames/boar_dash_02.png",
+      "source_frame": 2
+    },
+    {
+      "id": "boar_dash_03",
+      "file": "frames/boar_dash_03.png",
+      "source_frame": 3
+    },
+    {
+      "id": "boar_dash_04",
+      "file": "frames/boar_dash_04.png",
+      "source_frame": 4
+    },
+    {
+      "id": "boar_dash_05",
+      "file": "frames/boar_dash_05.png",
+      "source_frame": 5
+    },
+    {
+      "id": "boar_dash_06",
+      "file": "frames/boar_dash_06.png",
+      "source_frame": 6
+    },
+    {
+      "id": "boar_dash_07",
+      "file": "frames/boar_dash_07.png",
+      "source_frame": 7
+    },
+    {
+      "id": "boar_dash_08",
+      "file": "frames/boar_dash_08.png",
+      "source_frame": 8
+    },
+    {
+      "id": "boar_dash_09",
+      "file": "frames/boar_dash_09.png",
+      "source_frame": 9
+    },
+    {
+      "id": "boar_dash_10",
+      "file": "frames/boar_dash_10.png",
+      "source_frame": 10
+    }
+  ],
+  "sequence": [
+    "boar_dash_01",
+    "boar_dash_02",
+    "boar_dash_03",
+    "boar_dash_04",
+    "boar_dash_05",
+    "boar_dash_06",
+    "boar_dash_07",
+    "boar_dash_08",
+    "boar_dash_09",
+    "boar_dash_10"
+  ],
+  "sprite_sheet": {
+    "file": "boar_dash_spritesheet.png",
+    "frame_width": 537,
+    "frame_height": 397,
+    "columns": 10
+  },
+  "preview_gif": "boar_dash.gif"
+}

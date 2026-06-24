@@ -18,17 +18,16 @@ func _run() -> void:
 	for path in [
 		"Player",
 		"HopMonster",
-		"RidePlatform",
+		"HopMonster2",
 		"SkullMonsterA",
 		"SkullMonsterB",
 		"SkullMonsterC",
-		"GoalArea",
 		"EditableGeometry/NormalTileGroups",
 		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateA",
 		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateB",
 		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_GateC",
 	]:
-		assert(scene.has_node(path))
+		assert(scene.has_node(path), "Missing Stage6 node: %s" % path)
 
 	for group_name in ["ActionBreakGroup_GateA", "ActionBreakGroup_GateB", "ActionBreakGroup_GateC"]:
 		var group := scene.get_node("EditableGeometry/ActionBreakGroups/%s" % group_name)

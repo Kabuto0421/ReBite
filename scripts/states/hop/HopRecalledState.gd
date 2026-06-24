@@ -29,6 +29,7 @@ func physics_update(delta: float) -> void:
 
 	if not replay_started:
 		replay_started = true
+		owner_node.set_replay_outline_active(true)
 		owner_node.resume_animation()
 		owner_node.set_active_action_record(record)
 		owner_node.set_attack_hitbox_active(true)
@@ -53,6 +54,7 @@ func physics_update(delta: float) -> void:
 
 func exit() -> void:
 	owner_node.resume_animation()
+	owner_node.set_replay_outline_active(false)
 	owner_node.clear_active_action_record(record)
 	owner_node.set_attack_hitbox_active(false)
 

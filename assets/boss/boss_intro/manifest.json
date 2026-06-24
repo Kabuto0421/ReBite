@@ -1,0 +1,31 @@
+{
+  "format": "horizontal_strip",
+  "background": "transparent",
+  "filter": "nearest",
+  "sheets": {
+    "boar_intro_actions": {
+      "file": "boar_intro_actions_800x96.png",
+      "frame_size": [160, 96],
+      "anchor": "bottom_center",
+      "frames": ["roar", "dash_anticipation", "dash_launch", "smash_anticipation", "smash_impact"]
+    },
+    "smash_shockwave": {
+      "file": "smash_shockwave_384x48.png",
+      "frame_size": [96, 48],
+      "anchor": "bottom_center",
+      "frames": ["burst", "short_wave", "full_wave", "fade"]
+    },
+    "memory_tag_components": {
+      "file": "memory_tag_components_640x64.png",
+      "frame_size": [128, 64],
+      "anchor": "center",
+      "frames": ["empty_panel", "dash_symbol", "smash_symbol", "arrow_left", "arrow_right"]
+    },
+    "memory_absorb_fx": {
+      "file": "memory_absorb_fx_480x64.png",
+      "frame_size": [96, 64],
+      "anchor": "center",
+      "frames": ["separate", "pulling", "spiral", "flash", "fade"]
+    }
+  }
+}

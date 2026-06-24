@@ -1,0 +1,53 @@
+{
+  "format": "horizontal_strip",
+  "background": "transparent",
+  "filter": "nearest",
+  "sheets": {
+    "rock": {
+      "file": "rock_states_108x36.png",
+      "frame_size": [36, 36],
+      "frames": ["intact", "cracked", "broken"]
+    },
+    "hanging_rock": {
+      "file": "hanging_rock_states_192x96.png",
+      "frame_size": [64, 96],
+      "frames": ["suspended", "tension", "released"]
+    },
+    "support": {
+      "file": "support_states_192x96.png",
+      "frame_size": [48, 96],
+      "frames": ["intact", "cracked", "breaking", "rubble"]
+    },
+    "timed_dropper": {
+      "file": "timed_dropper_states_256x64.png",
+      "frame_size": [64, 64],
+      "frames": ["closed", "loaded", "opening", "empty"]
+    },
+    "landing_marker": {
+      "file": "landing_marker_states_192x24.png",
+      "frame_size": [64, 24],
+      "frames": ["early", "warning", "imminent"]
+    },
+    "rock_socket": {
+      "file": "rock_socket_states_192x32.png",
+      "frame_size": [64, 32],
+      "frames": ["empty", "occupied", "sprung"]
+    },
+    "stopper": {
+      "file": "stopper_states_720x96.png",
+      "frame_size": [144, 96],
+      "pivot": [72, 84],
+      "frames": ["folded", "upright_unlocked", "upright_locked", "recoiling", "fallen"]
+    },
+    "final_wall": {
+      "file": "final_wall_states_480x128.png",
+      "frame_size": [96, 128],
+      "frames": ["intact", "cracked", "dented", "collapsing", "opened"]
+    },
+    "destruction_fx": {
+      "file": "destruction_fx_states_384x64.png",
+      "frame_size": [64, 64],
+      "frames": ["rock_dust", "impact_spark", "wood_splinters", "stone_fragments", "wall_dust", "shock_lines"]
+    }
+  }
+}

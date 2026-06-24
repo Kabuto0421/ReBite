@@ -2,6 +2,13 @@
 class_name MemoryTag
 extends Node2D
 
+signal lifecycle_changed(previous: int, current: int)
+signal memory_consumed(memory_id: int)
+signal memory_injected(direction: Vector2, memory_id: int)
+signal memory_reformed(memory_id: int)
+
+enum Lifecycle { NONE, AVAILABLE, BREAKING, REPLAYING, REFORMING }
+
 const PLAQUE_TEXTURE_PATH := "res://assets/ui/memory_tag_plaque.png"
 const TOP_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_top_fang.png"
 const BOTTOM_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_bottom_fang.png"
@@ -28,11 +35,16 @@ const HINT_PARTS := {
 	"key": {"texture": KEY_TEXTURE_PATH, "position": Vector2(0, -49), "scale": HINT_KEY_SCALE, "flip_h": false, "flip_v": false},
 }
 
+@export_range(0.2, 0.9, 0.05) var blink_start_progress := 0.70 # タグ更新までの残り割合がこの値を下回ると点滅する。
+
 @onready var label: Label = $Label
 @onready var crack: Label = $Crack
 @onready var plaque: Sprite2D = $Plaque
 
 var text_sprite: Sprite2D
+var lifecycle: Lifecycle = Lifecycle.NONE
+var visual_tween: Tween
+var window_progress := 1.0 # 現在行動がタグ更新へ近づいている割合。
 
 func _ready() -> void:
 	plaque.texture = _load_texture(PLAQUE_TEXTURE_PATH)
@@ -44,6 +56,9 @@ func _ready() -> void:
 	visible = false
 
 func show_record(record: Resource) -> void:
+	_kill_visual_tween()
+	if record != null:
+		record.is_available = true
 	label.text = _to_text(record)
 	crack.visible = false
 	plaque.visible = true
@@ -52,8 +67,69 @@ func show_record(record: Resource) -> void:
 	text_sprite.visible = true
 	modulate = Color.WHITE
 	scale = Vector2.ONE
+	plaque.modulate = Color.WHITE
+	text_sprite.modulate = Color.WHITE
+	window_progress = 1.0
 	set_bite_hint_active(false)
 	visible = true
+	_set_lifecycle(Lifecycle.AVAILABLE)
+
+# 噛み成立後の破壊と方向流入を短時間で再生する。
+func begin_breaking(record: Resource) -> void:
+	if lifecycle != Lifecycle.AVAILABLE:
+		return
+	if record != null:
+		record.is_available = false
+		memory_consumed.emit(record.memory_id)
+	_set_lifecycle(Lifecycle.BREAKING)
+	set_bite_hint_active(false)
+	crack.visible = true
+	label.text = "←" if record != null and record.direction.x < 0.0 else "→"
+	label.visible = false
+	visual_tween = create_tween()
+	visual_tween.tween_property(self, "scale", Vector2(0.88, 1.08), 0.04)
+	visual_tween.tween_callback(_show_direction_only)
+	visual_tween.tween_interval(0.04)
+	visual_tween.tween_callback(_emit_arrow_afterimage)
+	visual_tween.tween_property(label, "position:y", 11.0, 0.07)
+	visual_tween.parallel().tween_property(label, "scale", Vector2(0.68, 0.68), 0.07)
+	visual_tween.tween_callback(_emit_arrow_afterimage)
+	visual_tween.tween_property(label, "position:y", 35.0, 0.07)
+	visual_tween.parallel().tween_property(label, "scale", Vector2(0.34, 0.34), 0.07)
+	visual_tween.tween_callback(Callable(self, "_emit_memory_injected").bind(record))
+	visual_tween.tween_property(label, "modulate:a", 0.0, 0.025)
+	visual_tween.tween_callback(mark_replaying)
+	_emit_tag_shards()
+
+# 再演中の表示なし状態へ切り替える。
+func mark_replaying() -> void:
+	_set_lifecycle(Lifecycle.REPLAYING)
+	visible = false
+
+# 完了した再演記憶を短い生成演出後に再び噛める状態へ戻す。
+func reform_record(record: Resource) -> void:
+	_kill_visual_tween()
+	_set_lifecycle(Lifecycle.REFORMING)
+	label.text = _to_text(record)
+	crack.visible = false
+	plaque.visible = true
+	label.visible = false
+	_apply_text_sprite(record)
+	text_sprite.visible = true
+	text_sprite.modulate = Color.WHITE
+	plaque.modulate = Color.WHITE
+	modulate = Color.WHITE
+	scale = Vector2(0.72, 0.72)
+	visible = true
+	visual_tween = create_tween()
+	visual_tween.set_trans(Tween.TRANS_BACK)
+	visual_tween.set_ease(Tween.EASE_OUT)
+	visual_tween.tween_property(self, "scale", Vector2.ONE, 0.09)
+	visual_tween.tween_callback(Callable(self, "_finish_reform").bind(record))
+
+# 現在タグを噛めるか返す。
+func is_available() -> bool:
+	return lifecycle == Lifecycle.AVAILABLE
 
 func set_bite_hint_active(active: bool) -> void:
 	for child in get_children():
@@ -64,10 +140,11 @@ func set_bite_hint_active(active: bool) -> void:
 
 func set_window_progress(progress: float) -> void:
 	var clamped: float = clamp(progress, 0.0, 1.0)
+	window_progress = clamped
 	var pulse := 1.0 + sin(Time.get_ticks_msec() * 0.018) * 0.035
 	scale = Vector2(pulse, pulse)
 	var urgency: float = 1.0 - clamped
-	if clamped < 0.28:
+	if clamped < blink_start_progress:
 		var blink := 0.55 + 0.45 * sin(Time.get_ticks_msec() * 0.045)
 		plaque.modulate = Color(1.0, 0.45 + blink * 0.45, 0.22, 1.0)
 		text_sprite.modulate = Color(1.0, 0.82 + blink * 0.18, 0.4, 1.0)
@@ -76,7 +153,8 @@ func set_window_progress(progress: float) -> void:
 		text_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func crack_tag() -> void:
-	_play_stage_sfx(&"memory_tag_crack")
+	_kill_visual_tween()
+	_set_lifecycle(Lifecycle.BREAKING)
 	crack.visible = true
 	var tween := create_tween()
 	scale = Vector2.ONE
@@ -88,6 +166,62 @@ func crack_tag() -> void:
 
 func hide_tag() -> void:
 	visible = false
+	_set_lifecycle(Lifecycle.NONE)
+
+func _show_direction_only() -> void:
+	plaque.visible = false
+	text_sprite.visible = false
+	crack.visible = false
+	label.position = Vector2(-43.0, -13.0)
+	label.pivot_offset = label.size * 0.5
+	label.scale = Vector2.ONE
+	label.modulate = Color(1.0, 0.9, 0.42, 1.0)
+	label.visible = true
+
+# 流入中の方向矢印へ短い残像を追加する。
+func _emit_arrow_afterimage() -> void:
+	var afterimage := Label.new()
+	afterimage.text = label.text
+	afterimage.position = label.position
+	afterimage.size = label.size
+	afterimage.pivot_offset = label.pivot_offset
+	afterimage.scale = label.scale
+	afterimage.z_index = label.z_index - 1
+	afterimage.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	afterimage.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	afterimage.add_theme_font_size_override("font_size", 15)
+	afterimage.add_theme_color_override("font_color", Color(1.0, 0.72, 0.18, 0.72))
+	afterimage.add_theme_color_override("font_shadow_color", Color.BLACK)
+	add_child(afterimage)
+	var tween := afterimage.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(afterimage, "position:y", afterimage.position.y + 8.0, 0.12)
+	tween.tween_property(afterimage, "modulate:a", 0.0, 0.12)
+	tween.set_parallel(false)
+	tween.tween_callback(afterimage.queue_free)
+
+# 矢印が敵本体へ到達したことを所有者へ通知する。
+func _emit_memory_injected(record: Resource) -> void:
+	if record != null:
+		memory_injected.emit(record.direction, record.memory_id)
+
+func _finish_reform(record: Resource) -> void:
+	if record != null:
+		record.is_available = true
+	_set_lifecycle(Lifecycle.AVAILABLE)
+	memory_reformed.emit(record.memory_id if record != null else 0)
+
+func _set_lifecycle(next: Lifecycle) -> void:
+	if lifecycle == next:
+		return
+	var previous := lifecycle
+	lifecycle = next
+	lifecycle_changed.emit(previous, lifecycle)
+
+func _kill_visual_tween() -> void:
+	if visual_tween != null and visual_tween.is_valid():
+		visual_tween.kill()
+	visual_tween = null
 
 func _to_text(record: Resource) -> String:
 	match record.action_name:
@@ -106,10 +240,7 @@ func _emit_tag_shards() -> void:
 	var root := get_tree().current_scene
 	if root == null:
 		root = get_parent()
-	var shard_texts: Array[String] = []
-	for i in label.text.length():
-		shard_texts.append(label.text.substr(i, 1))
-	shard_texts.append("◆")
+	var shard_texts: Array[String] = ["◆", "◇", "▪"]
 	for i in 12:
 		var shard := Label.new()
 		shard.text = shard_texts[i % shard_texts.size()]
@@ -125,12 +256,6 @@ func _emit_tag_shards() -> void:
 		tween.tween_property(shard, "modulate:a", 0.0, 0.34)
 		tween.set_parallel(false)
 		tween.tween_callback(shard.queue_free)
-
-# 現在ステージのSE再生口へ通知する。
-func _play_stage_sfx(sound_name: StringName) -> void:
-	var root := get_tree().current_scene
-	if root != null and root.has_method("play_sfx"):
-		root.play_sfx(sound_name)
 
 func _setup_bite_hint_parts() -> void:
 	for part_name in HINT_PARTS:

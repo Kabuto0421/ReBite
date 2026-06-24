@@ -37,6 +37,8 @@ const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
 @export_group("Audio")
 @export var sfx_enabled := true # 効果音を再生するかどうか。
 @export var bgm_enabled := true # BGMを再生するかどうか。
+@export_file("*.wav", "*.ogg") var bgm_path := "res://assets/bgm/memory_bite_loop_02.wav" # 通常ステージで再生するBGM。
+@export var bgm_autoplay := true # Stage初期化時に既定BGMを再生するか。
 @export var bgm_volume_db := -23.0 # BGMの音量。
 @export_range(0.0, 18.0, 0.5) var bgm_duck_db := 6.0 # 重要SE再生時にBGMを下げる量。
 @export_range(0.0, 1.0, 0.01) var bgm_duck_hold_time := 0.16 # BGMを下げたまま保持する時間。
@@ -117,6 +119,7 @@ func _build_world() -> void:
 func _setup_entities() -> void:
 	player = $Player
 	player.bite_hit.connect(_on_player_bite_hit)
+	player.bite_contact.connect(_on_player_bite_contact)
 	player.bite_missed.connect(_on_player_bite_missed)
 
 	enemy_tracker = StageEnemyTrackerScript.new()
@@ -219,12 +222,13 @@ func _build_stage_bgm() -> void:
 	stage_bgm = StageBgmScript.new()
 	stage_bgm.name = "StageBgm"
 	stage_bgm.enabled = bgm_enabled
+	stage_bgm.bgm_path = bgm_path
 	stage_bgm.volume_db = bgm_volume_db
 	stage_bgm.duck_db = bgm_duck_db
 	stage_bgm.duck_hold_time = bgm_duck_hold_time
 	stage_bgm.duck_recover_time = bgm_duck_recover_time
 	add_child(stage_bgm)
-	stage_bgm.setup()
+	stage_bgm.setup(bgm_autoplay)
 	if stage_sfx != null and not stage_sfx.important_sound_played.is_connected(_on_important_sfx_played):
 		stage_sfx.important_sound_played.connect(_on_important_sfx_played)
 
@@ -374,6 +378,10 @@ func _on_player_bite_hit(target: Node) -> void:
 	_play_bite_camera(target)
 	_play_bite_low_tone()
 
+# 牙がタグへ届いた瞬間に破砕音を鳴らし、旧仕様のザシュからぱりんの順序を保つ。
+func _on_player_bite_contact(_target: Node) -> void:
+	play_sfx(&"memory_tag_crack")
+
 # プレイヤーの噛み失敗イベントを受け取る。
 func _on_player_bite_missed() -> void:
 	locked_bite_target = null
@@ -429,9 +437,9 @@ func _update_memory_focus() -> void:
 	if memory_overlay == null:
 		return
 	var target := _current_prediction_target()
-	var active: bool = target != null
+	var active: bool = target != null and (not target.has_method("is_biteable") or target.is_biteable())
 	memory_overlay.visible = active or camera_cinematic
-	_update_memory_tag_hints(target)
+	_update_memory_tag_hints(target if active else null)
 	if active and target.last_record != null:
 		var start: Vector2 = target.global_position
 		var end: Vector2 = start + target.last_record.velocity * target.last_record.duration
@@ -500,6 +508,10 @@ func _shake_camera(strength: float, duration: float) -> void:
 # カメラ部品へ揺れを依頼する。
 func shake_camera(strength: float, duration: float) -> void:
 	camera_rig.shake(self, strength, duration, spike_impact_freeze_active)
+
+# ヒットストップ中も進むカメラ揺れを開始する。
+func shake_camera_while_paused(strength: float, duration: float) -> void:
+	camera_rig.shake(self, strength, duration, true)
 
 # pause中でも進むTweenを作成する。
 func create_spike_impact_tween() -> Tween:

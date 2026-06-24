@@ -25,15 +25,20 @@ func _run() -> void:
 	await _settle_frames(2)
 	assert(player.pick_bite_target() == skull)
 
-	player.state_machine.change_state(&"BiteLunge", null)
-	assert(player.current_state_name() == &"BiteLunge")
-
 	skull.state_machine.change_state(&"RightDash", null)
-	assert(not skull.is_biteable())
-
-	await _settle_seconds(0.18)
+	assert(skull.is_biteable())
+	var bite_context: Dictionary = player.prepare_bite_context()
+	assert(bite_context.get("replay_started", false))
+	var bite_events: Array[StringName] = []
+	player.bite_hit.connect(func(_target: Node): bite_events.append(&"hit"))
+	player.bite_contact.connect(func(_target: Node): bite_events.append(&"contact"))
+	player.state_machine.change_state(&"BiteLunge", bite_context)
+	assert(player.current_state_name() == &"BiteLunge")
 	assert(skull.current_state_name() == &"Recalled")
 	assert(skull.state_machine.current_state.record.direction.x < 0.0)
+	assert(bite_events == [&"hit"])
+	await _settle_seconds(0.16)
+	assert(bite_events == [&"hit", &"contact"])
 
 	print("BITE_COMMIT_ON_START_CHECK_OK")
 	root.remove_child(scene)

@@ -14,4 +14,4 @@ func physics_update(delta: float) -> void:
 
 func handle_input(event: InputEvent) -> void:
 	if event.is_action_pressed("bite"):
-		transition_requested.emit(&"BiteWindup", null)
+		transition_requested.emit(&"BiteWindup", owner_node.prepare_bite_context())
