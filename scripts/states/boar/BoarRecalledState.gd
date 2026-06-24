@@ -24,6 +24,7 @@ func enter(payload: Variant = null) -> void:
 # 状態を抜ける時に攻撃判定と行動記録を必ず解除する。
 func exit() -> void:
 	_set_impact_active(false)
+	owner_node.set_replay_outline_active(false)
 	owner_node.velocity.x = 0.0
 
 # 停止演出後、記録時と同じ速度・長さでSMASHを再演する。
@@ -36,6 +37,7 @@ func physics_update(delta: float) -> void:
 
 	if not replay_started:
 		replay_started = true
+		owner_node.set_replay_outline_active(true)
 		owner_node.play_animation(&"smash")
 		owner_node.sprite.set_frame_and_progress(0, 0.0)
 

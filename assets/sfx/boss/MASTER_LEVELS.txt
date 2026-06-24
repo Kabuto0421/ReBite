@@ -1,0 +1,8 @@
+01_boar_dash.wav	0.580s	RMS -18.0 dBFS	Peak -11.2 dBFS
+02_boar_smash.wav	1.020s	RMS -17.0 dBFS	Peak -7.3 dBFS
+03_boar_damage.wav	0.560s	RMS -18.5 dBFS	Peak -10.5 dBFS
+04_boar_defeat.wav	1.950s	RMS -19.0 dBFS	Peak -8.8 dBFS
+05_boar_wall_impact.wav	0.965s	RMS -17.0 dBFS	Peak -6.3 dBFS
+06_falling_object_warning.wav	1.050s	RMS -21.0 dBFS	Peak -14.4 dBFS
+07_falling_object_and_impact.wav	1.682s	RMS -19.0 dBFS	Peak -9.9 dBFS
+08_falling_object_impact_only.wav	0.620s	RMS -17.5 dBFS	Peak -8.0 dBFS

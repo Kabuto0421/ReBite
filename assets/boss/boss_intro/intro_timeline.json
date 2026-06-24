@@ -1,0 +1,38 @@
+{
+  "duration_seconds": 4.0,
+  "skippable_after_first_view": true,
+  "beats": [
+    {
+      "start": 0.0,
+      "end": 0.55,
+      "action": "boar_roar",
+      "sprite": "boar_intro_actions:roar"
+    },
+    {
+      "start": 0.55,
+      "end": 1.35,
+      "action": "show_dash",
+      "sprites": ["boar_intro_actions:dash_anticipation", "boar_intro_actions:dash_launch"],
+      "note": "Duplicate dash_launch behind the boss with violet tint and decreasing opacity to create afterimages."
+    },
+    {
+      "start": 1.35,
+      "end": 2.15,
+      "action": "show_smash",
+      "sprites": ["boar_intro_actions:smash_anticipation", "boar_intro_actions:smash_impact", "smash_shockwave:*" ]
+    },
+    {
+      "start": 2.15,
+      "end": 3.25,
+      "action": "show_and_absorb_memory_tags",
+      "sprites": ["memory_tag_components:*", "memory_absorb_fx:*"],
+      "note": "Render DASH/SMASH text with the game font over the empty panel; do not bake text into the sprite."
+    },
+    {
+      "start": 3.25,
+      "end": 4.0,
+      "action": "show_boss_name_and_start_battle",
+      "note": "Render the boss name and HP UI with the game font, then transition to the existing idle animation."
+    }
+  ]
+}

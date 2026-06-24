@@ -17,4 +17,4 @@ func handle_input(event: InputEvent) -> void:
 		owner_node.jump()
 		transition_requested.emit(&"Air", null)
 	elif event.is_action_pressed("bite"):
-		transition_requested.emit(&"BiteWindup", null)
+		transition_requested.emit(&"BiteWindup", owner_node.prepare_bite_context())

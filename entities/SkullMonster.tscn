@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://skull_memory_bite"]
+[gd_scene load_steps=16 format=3 uid="uid://skull_memory_bite"]
 
 [ext_resource type="Script" path="res://scripts/entities/SkullMonster.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/entities/MemoryTag.gd" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/states/enemy/EnemyDyingState.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/states/enemy/EnemyRightDashState.gd" id="10"]
 [ext_resource type="Shader" path="res://assets/shaders/skull_pixel_outline.gdshader" id="12"]
+[ext_resource type="Script" path="res://scripts/presentation/SkullAttackWarningEyes.gd" id="14"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_skull"]
 size = Vector2(28, 42)
@@ -56,6 +57,10 @@ shape = SubResource("RectangleShape2D_attack_hitbox")
 material = SubResource("ShaderMaterial_skull_outline")
 position = Vector2(0, -36)
 scale = Vector2(1.25, 1.25)
+
+[node name="AttackWarningEyes" type="Node2D" parent="Sprite"]
+z_index = 4
+script = ExtResource("14")
 
 [node name="MemoryTag" type="Node2D" parent="."]
 z_index = 30

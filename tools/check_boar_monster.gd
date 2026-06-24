@@ -35,7 +35,10 @@ func _run() -> void:
 	boar.recall_start_delay = 0.0
 	boar.receive_committed_bite(null, committed_record)
 	assert(boar.current_state_name() == &"Recalled")
-	for i in 32:
+	await physics_frame
+	var boar_material := boar.sprite.material as ShaderMaterial
+	assert((boar_material.get_shader_parameter("outline_color") as Color).is_equal_approx(boar.replay_outline_color))
+	for i in 31:
 		await physics_frame
 	assert(boar.current_action_record() == committed_record)
 	assert(is_equal_approx(boar.velocity.x, committed_record.velocity.x))

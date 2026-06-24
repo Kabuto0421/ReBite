@@ -14,4 +14,4 @@ func physics_update(delta: float) -> void:
 	owner_node.apply_gravity(delta)
 	owner_node.move_and_slide()
 	if timer <= 0.0:
-		transition_requested.emit(&"Telegraph", null)
+		transition_requested.emit(&"Telegraph", owner_node.build_natural_dash_record())

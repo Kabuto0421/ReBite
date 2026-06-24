@@ -4,12 +4,34 @@
 [ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="2_tiles"]
 [ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="3_part"]
 [ext_resource type="PackedScene" path="res://entities/Player.tscn" id="4_player"]
-[ext_resource type="PackedScene" path="res://entities/BossBoar.tscn" id="5_boss"]
+[ext_resource type="PackedScene" uid="uid://bwpjsvlwlt7tm" path="res://entities/BossBoar.tscn" id="5_boss"]
+[ext_resource type="PackedScene" uid="uid://m8tnd4tslbkr" path="res://boss/gimmicks/FallingRockTrap.tscn" id="6_falling"]
+[ext_resource type="PackedScene" uid="uid://b3h0yc26kpqy4" path="res://boss/gimmicks/TimedDropTrap.tscn" id="7_timed"]
+[ext_resource type="PackedScene" path="res://boss/gimmicks/BossRockActor.tscn" id="8_rock"]
+[ext_resource type="PackedScene" uid="uid://gg2wtwunc0t1" path="res://boss/gimmicks/StopperTrap.tscn" id="9_stopper"]
+[ext_resource type="PackedScene" path="res://boss/gimmicks/FinalWall.tscn" id="10_wall"]
+[ext_resource type="Script" uid="uid://builctsukrpxe" path="res://scripts/boss/audio/BoarBossSfx.gd" id="11_boss_sfx"]
+[ext_resource type="Script" uid="uid://cqji4wklyt8e1" path="res://scripts/boss/audio/BossMusicBus.gd" id="12_boss_music"]
+[ext_resource type="Script" uid="uid://bnfwf8os30b2c" path="res://scripts/boss/camera/BoarBossCameraFeedback.gd" id="13_boss_camera"]
+[ext_resource type="Script" uid="uid://dusv8sdfdpxlx" path="res://scripts/boss/impact/BossImpactFeedback.gd" id="14_boss_impact"]
 
 [node name="Stage10" type="Node2D" unique_id=381693630]
 script = ExtResource("1_stage")
 stage_display_name = "STAGE 10"
 goal_area_path = NodePath("")
+bgm_autoplay = false
+
+[node name="BoarBossSfx" type="Node" parent="." unique_id=2145488128]
+script = ExtResource("11_boss_sfx")
+
+[node name="BossMusicBus" type="Node" parent="." unique_id=1478711799]
+script = ExtResource("12_boss_music")
+
+[node name="BoarBossCameraFeedback" type="Node" parent="." unique_id=922146858]
+script = ExtResource("13_boss_camera")
+
+[node name="BossImpactFeedback" type="Node" parent="." unique_id=877418637]
+script = ExtResource("14_boss_impact")
 
 [node name="EditableGeometry" type="Node2D" parent="." unique_id=1496795502]
 
@@ -42,25 +64,52 @@ rect_name = "Ceiling"
 size = Vector2(1200, 32)
 
 [node name="Rect_LeftGimmickBase" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=24943236]
-position = Vector2(205, 408)
+z_index = 5
+position = Vector2(306, 397)
 script = ExtResource("3_part")
 rect_name = "LeftGimmickBase"
 size = Vector2(176, 32)
 
 [node name="Rect_RightGimmickBase" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1301988869]
-position = Vector2(865, 376)
+position = Vector2(954, 398)
 script = ExtResource("3_part")
 rect_name = "RightGimmickBase"
-size = Vector2(176, 32)
+size = Vector2(159.9, 32)
 
 [node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry" unique_id=637388329]
 
 [node name="Gimmicks" type="Node2D" parent="." unique_id=340871541]
-editor_description = "ボスへ3回ダメージを与えるギミックをここへ追加する。"
+editor_description = "初回落石2つ、再利用岩2つ、ストッパー、最終壁を配置する。"
+
+[node name="FallingRockTrap" parent="Gimmicks" unique_id=1264230833 instance=ExtResource("6_falling")]
+position = Vector2(265, 241)
+
+[node name="TimedDropTrap" parent="Gimmicks" unique_id=150292164 instance=ExtResource("7_timed")]
+position = Vector2(925.00006, 158.00002)
+scale = Vector2(1.3, 1.3)
+countdown_time = 8.5
+landing_offset = Vector2(0, 250)
+
+[node name="RockA" parent="Gimmicks" unique_id=812471150 instance=ExtResource("8_rock")]
+visible = false
+position = Vector2(265, 486)
+socket_offset = Vector2(403, 0)
+
+[node name="RockB" parent="Gimmicks" unique_id=1019258047 instance=ExtResource("8_rock")]
+position = Vector2(924, 487)
+rock_id = &"rock_b"
+socket_offset = Vector2(-160, 0)
+
+[node name="StopperTrap" parent="Gimmicks" unique_id=1167760589 instance=ExtResource("9_stopper")]
+position = Vector2(660, 507)
+
+[node name="FinalWall" parent="Gimmicks" unique_id=296543263 instance=ExtResource("10_wall")]
+position = Vector2(1157, 499)
 
 [node name="Player" parent="." unique_id=1243346886 instance=ExtResource("4_player")]
-position = Vector2(180, 520)
+position = Vector2(505, 481)
 jump_velocity = -520.0
+visual_scale = Vector2(1.65, 1.65)
 
 [node name="BoarBoss" parent="." unique_id=134607443 instance=ExtResource("5_boss")]
-position = Vector2(560, 520)
+position = Vector2(290, 523)

@@ -3,7 +3,10 @@ class_name Player
 extends "res://scripts/entities/Character.gd"
 
 signal bite_hit(target: Node)
+signal bite_contact(target: Node) # 飛びついた牙が記憶タグへ届いた瞬間を通知する。
 signal bite_missed
+signal death_started # ボスEncounterへ死亡開始を通知する。
+signal respawned # ボスEncounterへ復帰完了を通知する。
 
 const StateMachineScript := preload("res://scripts/core/StateMachine.gd")
 const SpriteFrameBuilder := preload("res://scripts/core/SpriteFrameBuilder.gd")
@@ -16,10 +19,14 @@ const PlayerDeadState := preload("res://scripts/states/player/PlayerDeadState.gd
 
 @export var move_speed := 210.0
 @export var jump_velocity := -410.0
+@export var visual_scale := Vector2(1.35, 1.35) # 当たり判定と独立したSprite表示倍率。
+@export_range(0.10, 0.20, 0.01) var bite_contact_immunity_max := 0.16 # 成功対象との重なりを保護する上限時間。
+@export_range(0.0, 12.0, 1.0) var bite_separation_distance := 8.0 # 噛み成功時に後方へ離す最大距離。
 
 var facing := 1
 var is_dead := false
 var bite_invulnerable := false
+var contact_immunity_targets: Dictionary = {} # 噛み成功対象ごとの接触保護残り時間。
 
 @onready var bite_area: Area2D = $BiteArea
 @onready var drop_bite_area: Area2D = $DropBiteArea
@@ -27,6 +34,7 @@ var bite_invulnerable := false
 func _ready() -> void:
 	remember_spawn_position()
 	_build_animations()
+	sprite.scale = visual_scale
 	state_machine.initialize(self, &"Ground")
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -35,6 +43,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	state_machine.handle_input(event)
 
 func _physics_process(delta: float) -> void:
+	_update_contact_immunity(delta)
 	state_machine.physics_update(delta)
 
 func apply_horizontal_input() -> void:
@@ -64,33 +73,130 @@ func pick_bite_target() -> Node:
 					best = body
 	return best
 
+# K入力時点で対象と記憶を固定し、移動中の対象へ噛み開始を通知する。
+func prepare_bite_context() -> Dictionary:
+	var target := pick_bite_target()
+	if target == null:
+		return {}
+	var record: Resource
+	if target.has_method("bite_commit_record"):
+		record = target.bite_commit_record()
+	var replay_started := false
+	if target.has_method("begin_committed_bite"):
+		replay_started = bool(target.begin_committed_bite(self, record))
+	if replay_started:
+		grant_contact_immunity(target)
+		_separate_from_target(target, record)
+	return {
+		"target": target,
+		"record": record,
+		"replay_started": replay_started,
+	}
+
+# 噛み成功対象だけを一時的な接触無効リストへ登録する。
+func grant_contact_immunity(target: Node) -> void:
+	if is_instance_valid(target):
+		contact_immunity_targets[target.get_instance_id()] = {
+			"target": weakref(target),
+			"remaining": bite_contact_immunity_max,
+			"elapsed": 0.0,
+			"has_overlapped": _collision_bounds_overlap(target),
+		}
+
+# 指定した敵からの接触だけを無効化しているか返す。
+func is_contact_immune_from(source: Node) -> bool:
+	return is_instance_valid(source) and contact_immunity_targets.has(source.get_instance_id())
+
 func reset_to_spawn() -> void:
 	is_dead = false
 	set_bite_invulnerable(false)
+	contact_immunity_targets.clear()
 	global_position = spawn_position
 	velocity = Vector2.ZERO
 	sprite.modulate = Color.WHITE
 	sprite.rotation = 0.0
-	sprite.scale = Vector2(1.35, 1.35)
+	sprite.scale = visual_scale
 	bite_area.set_deferred("monitoring", true)
 	bite_area.set_deferred("monitorable", true)
 	drop_bite_area.set_deferred("monitoring", true)
 	drop_bite_area.set_deferred("monitorable", true)
 	state_machine.change_state(&"Ground")
+	respawned.emit()
 
 func die() -> void:
 	if is_dead or bite_invulnerable:
 		return
 	is_dead = true
+	contact_immunity_targets.clear()
+	death_started.emit()
 	state_machine.change_state(&"Dead", null)
 
 func set_bite_invulnerable(active: bool) -> void:
 	bite_invulnerable = active
 
+# 対象と離れた時点、または安全時間上限で接触保護を解除する。
+func _update_contact_immunity(delta: float) -> void:
+	var expired: Array[int] = []
+	for instance_id in contact_immunity_targets:
+		var entry: Dictionary = contact_immunity_targets[instance_id]
+		var target: Node = (entry.target as WeakRef).get_ref()
+		if not is_instance_valid(target):
+			expired.append(instance_id)
+			continue
+		entry.remaining = float(entry.remaining) - delta
+		entry.elapsed = float(entry.elapsed) + delta
+		var overlaps := _collision_bounds_overlap(target)
+		entry.has_overlapped = bool(entry.has_overlapped) or overlaps
+		contact_immunity_targets[instance_id] = entry
+		if entry.remaining <= 0.0 or (entry.elapsed >= 0.02 and bool(entry.has_overlapped) and not overlaps):
+			expired.append(instance_id)
+	for instance_id in expired:
+		contact_immunity_targets.erase(instance_id)
+
+# 壁へ押し込まない範囲で、噛んだ対象から数ピクセル後退する。
+func _separate_from_target(target: Node, record: Resource) -> void:
+	var away_x := signf(global_position.x - target.global_position.x)
+	if is_zero_approx(away_x) and record != null:
+		away_x = -signf(record.direction.x)
+	if is_zero_approx(away_x):
+		away_x = -float(facing)
+	var step := Vector2(away_x, 0.0)
+	for i in int(bite_separation_distance):
+		if test_move(global_transform, step):
+			break
+		global_position += step
+
+# Playerと対象の主要CollisionShapeの矩形領域が重なっているか返す。
+func _collision_bounds_overlap(target: Node) -> bool:
+	var own_bounds := _collision_bounds(self)
+	var target_bounds := _collision_bounds(target)
+	if own_bounds.size == Vector2.ZERO or target_bounds.size == Vector2.ZERO:
+		return global_position.distance_to(target.global_position) < 40.0
+	return own_bounds.intersects(target_bounds, true)
+
+# CharacterBody2Dの主要CollisionShapeから軸平行の判定領域を作る。
+func _collision_bounds(body: Node) -> Rect2:
+	var collision := body.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if collision == null or collision.shape == null:
+		return Rect2()
+	var size := Vector2.ZERO
+	if collision.shape is RectangleShape2D:
+		size = (collision.shape as RectangleShape2D).size
+	elif collision.shape is CapsuleShape2D:
+		var capsule := collision.shape as CapsuleShape2D
+		size = Vector2(capsule.radius * 2.0, capsule.height)
+	elif collision.shape is CircleShape2D:
+		var diameter := (collision.shape as CircleShape2D).radius * 2.0
+		size = Vector2(diameter, diameter)
+	if size == Vector2.ZERO:
+		return Rect2()
+	size *= collision.global_scale.abs()
+	return Rect2(collision.global_position - size * 0.5, size)
+
 func play_death_animation() -> void:
 	sprite.modulate = Color.WHITE
 	sprite.rotation = 0.0
-	sprite.scale = Vector2(1.35, 1.35)
+	sprite.scale = visual_scale
 	play_animation(&"dead")
 
 func spawn_death_burst() -> void:
