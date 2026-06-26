@@ -22,6 +22,7 @@ var default_tint_color := Color.WHITE # 通常時に各敵へ設定されてい�
 
 # 記憶敵に共通する初期化を行う。
 func setup_memory_enemy() -> void:
+	add_to_group(&"memory_enemy")
 	remember_spawn_position()
 	_setup_replay_outline_material()
 	attack_hitbox.collision_mask |= 1

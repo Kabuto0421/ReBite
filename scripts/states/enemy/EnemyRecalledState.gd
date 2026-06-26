@@ -49,9 +49,7 @@ func physics_update(delta: float) -> void:
 		transition_requested.emit(&"Recover", null)
 	elif owner_node.is_on_wall():
 		owner_node.set_attack_hitbox_active(false)
-		owner_node.last_record = null
-		owner_node.memory_tag.hide_tag()
-		owner_node.handle_blocked_dash(record.direction)
+		owner_node.handle_blocked_dash(record, &"REPLAY", true)
 		transition_requested.emit(&"Recover", {"blocked": true})
 
 func exit() -> void:

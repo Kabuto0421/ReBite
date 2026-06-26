@@ -17,7 +17,7 @@ const TELEGRAPH_TEXTURE := preload("res://assets/enemies/skull/attack/attack_02.
 @export var dash_speed := 260.0
 @export var dash_duration := 0.34
 @export_range(0.0, 1.0, 0.01) var recall_start_delay := 0.62
-@export_enum("NONE", "LEFT", "RIGHT") var initial_memory := 0
+@export_enum("NONE", "DASH_LEFT", "DASH_RIGHT") var initial_dash_memory := 0 # 開始時から表示するDASH記憶タグ。
 
 var next_dash_direction := Vector2.LEFT
 
@@ -67,11 +67,13 @@ func set_dash_direction_visual(direction: Vector2) -> void:
 		if attack_warning_eyes != null and attack_warning_eyes.has_method("sync_to_sprite"):
 			attack_warning_eyes.sync_to_sprite()
 
-# 壁で中断されたDASHを記憶せず、次の自然DASHだけを壁と反対方向へ向ける。
-func handle_blocked_dash(direction: Vector2) -> void:
+# 壁まで実行したDASHを記憶へ確定し、次の自然DASHを反対方向へ向ける。
+func handle_blocked_dash(record: Resource, source_type: StringName = &"NATURAL", reform := false) -> void:
 	velocity.x = 0.0
-	if not is_zero_approx(direction.x):
-		next_dash_direction = -direction.normalized()
+	if record == null or is_zero_approx(record.direction.x):
+		return
+	commit_dash_record(record.direction, source_type, reform)
+	next_dash_direction = -record.direction.normalized()
 
 # 記憶矢印の注入時に見た目を再演方向へ反転する。
 func _on_memory_injected(direction: Vector2, _memory_id: int) -> void:
@@ -152,9 +154,9 @@ func reset_to_spawn() -> void:
 func _setup_initial_memory() -> void:
 	last_record = null
 	next_dash_direction = Vector2.LEFT
-	if initial_memory == 1:
+	if initial_dash_memory == 1:
 		commit_dash_record(Vector2.LEFT)
-	elif initial_memory == 2:
+	elif initial_dash_memory == 2:
 		commit_dash_record(Vector2.RIGHT)
 
 func _build_animations() -> void:

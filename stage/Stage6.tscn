@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="7"]
 [ext_resource type="Script" uid="uid://clk4sq46xloom" path="res://scripts/stage/EditableSpikes.gd" id="8"]
 [ext_resource type="PackedScene" uid="uid://br3q5g48c8vvv" path="res://props/GuidanceLantern.tscn" id="9_33yfn"]
+[ext_resource type="PackedScene" path="res://props/ReBiteGateRig.tscn" id="10_ynqyt"]
 
 [node name="Stage6" type="Node2D" unique_id=887467939]
 script = ExtResource("1")
@@ -201,3 +202,8 @@ sway_enabled = true
 sway_angle = 8.0
 sway_speed = 0.4
 vertical_sway = 0.5
+
+[node name="ReBiteGateRig" parent="." unique_id=756866404 instance=ExtResource("10_ynqyt")]
+position = Vector2(645, 106)
+scale = Vector2(2, 2)
+tick_rate = 10.0

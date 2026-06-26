@@ -20,6 +20,17 @@ const PlayerDeadState := preload("res://scripts/states/player/PlayerDeadState.gd
 @export var move_speed := 210.0
 @export var jump_velocity := -410.0
 @export var visual_scale := Vector2(1.35, 1.35) # 当たり判定と独立したSprite表示倍率。
+
+@export_group("Movement Feel")
+@export_range(500.0, 6000.0, 100.0) var ground_acceleration := 3000.0 # 地上で目標速度へ近づく速さ。
+@export_range(500.0, 7000.0, 100.0) var ground_deceleration := 4200.0 # 地上で入力を離した時の停止速度。
+@export_range(500.0, 8000.0, 100.0) var ground_turn_acceleration := 5000.0 # 地上で逆方向へ切り返す速さ。
+@export_range(500.0, 5000.0, 100.0) var air_acceleration := 1800.0 # 空中で横速度を補正する速さ。
+@export_range(0.0, 0.2, 0.01) var coyote_time := 0.08 # 足場を離れた後もジャンプできる猶予。
+@export_range(0.0, 0.2, 0.01) var jump_buffer_time := 0.10 # 着地前のジャンプ入力を保存する時間。
+@export_range(0.0, 1000.0, 10.0) var landing_feedback_speed := 240.0 # 着地変形を出す最小落下速度。
+
+@export_group("Bite Safety")
 @export_range(0.10, 0.20, 0.01) var bite_contact_immunity_max := 0.16 # 成功対象との重なりを保護する上限時間。
 @export_range(0.0, 12.0, 1.0) var bite_separation_distance := 8.0 # 噛み成功時に後方へ離す最大距離。
 
@@ -27,6 +38,9 @@ var facing := 1
 var is_dead := false
 var bite_invulnerable := false
 var contact_immunity_targets: Dictionary = {} # 噛み成功対象ごとの接触保護残り時間。
+var coyote_timer := 0.0 # 現在残っているコヨーテタイム。
+var jump_buffer_timer := 0.0 # 現在保存しているジャンプ入力時間。
+var movement_feedback_tween: Tween # 離陸・着地変形を管理するTween。
 
 @onready var bite_area: Area2D = $BiteArea
 @onready var drop_bite_area: Area2D = $DropBiteArea
@@ -44,18 +58,63 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_contact_immunity(delta)
+	_update_jump_grace(delta)
 	state_machine.physics_update(delta)
 
-func apply_horizontal_input() -> void:
+# 地上入力へ短い加速、速い停止、素早い切り返しを適用する。
+func apply_ground_horizontal_input(delta: float) -> void:
 	var axis := Input.get_axis("move_left", "move_right")
-	velocity.x = axis * move_speed
-	if not is_zero_approx(axis):
-		facing = -1 if axis < 0.0 else 1
-		sprite.flip_h = facing < 0
-		bite_area.position.x = 34.0 * facing
+	var target_speed := axis * move_speed
+	var acceleration := ground_acceleration
+	if is_zero_approx(axis):
+		acceleration = ground_deceleration
+	elif not is_zero_approx(velocity.x) and signf(axis) != signf(velocity.x):
+		acceleration = ground_turn_acceleration
+	velocity.x = move_toward(velocity.x, target_speed, acceleration * delta)
+	_update_facing(axis)
 
+# 空中入力を弱い加速で反映し、跳躍中の慣性と着地点調整を両立する。
+func apply_air_horizontal_input(delta: float) -> void:
+	var axis := Input.get_axis("move_left", "move_right")
+	velocity.x = move_toward(velocity.x, axis * move_speed, air_acceleration * delta)
+	_update_facing(axis)
+
+# 上向き速度を設定してジャンプ猶予を消費する。
 func jump() -> void:
 	velocity.y = jump_velocity
+	coyote_timer = 0.0
+	jump_buffer_timer = 0.0
+	_play_takeoff_feedback()
+	_play_stage_sfx(&"hop_launch")
+
+# 地上にいる間、足場を離れた直後のジャンプ猶予を更新する。
+func refresh_coyote_window() -> void:
+	coyote_timer = coyote_time
+
+# ジャンプ入力を着地まで短時間保存する。
+func buffer_jump() -> void:
+	jump_buffer_timer = jump_buffer_time
+
+# 地上またはコヨーテ時間中なら保存済みジャンプを実行する。
+func try_consume_buffered_jump() -> bool:
+	if jump_buffer_timer <= 0.0:
+		return false
+	if not is_on_floor() and coyote_timer <= 0.0:
+		return false
+	jump()
+	return true
+
+# 落下速度に応じて着地変形と小さな埃を出す。
+func play_landing_feedback(fall_speed: float) -> void:
+	if fall_speed < landing_feedback_speed:
+		return
+	_kill_movement_feedback_tween()
+	sprite.scale = visual_scale * Vector2(1.12, 0.88)
+	movement_feedback_tween = create_tween()
+	movement_feedback_tween.set_trans(Tween.TRANS_QUAD)
+	movement_feedback_tween.set_ease(Tween.EASE_OUT)
+	movement_feedback_tween.tween_property(sprite, "scale", visual_scale, 0.08)
+	_spawn_landing_dust()
 
 func pick_bite_target() -> Node:
 	var best: Node = null
@@ -111,6 +170,9 @@ func reset_to_spawn() -> void:
 	is_dead = false
 	set_bite_invulnerable(false)
 	contact_immunity_targets.clear()
+	coyote_timer = 0.0
+	jump_buffer_timer = 0.0
+	_kill_movement_feedback_tween()
 	global_position = spawn_position
 	velocity = Vector2.ZERO
 	sprite.modulate = Color.WHITE
@@ -194,10 +256,65 @@ func _collision_bounds(body: Node) -> Rect2:
 	return Rect2(collision.global_position - size * 0.5, size)
 
 func play_death_animation() -> void:
+	_kill_movement_feedback_tween()
 	sprite.modulate = Color.WHITE
 	sprite.rotation = 0.0
 	sprite.scale = visual_scale
 	play_animation(&"dead")
+
+# 入力方向へ見た目と噛み判定の向きを揃える。
+func _update_facing(axis: float) -> void:
+	if is_zero_approx(axis):
+		return
+	facing = -1 if axis < 0.0 else 1
+	sprite.flip_h = facing < 0
+	bite_area.position.x = 34.0 * facing
+
+# コヨーテタイムとジャンプ入力保存時間を進める。
+func _update_jump_grace(delta: float) -> void:
+	coyote_timer = maxf(0.0, coyote_timer - delta)
+	jump_buffer_timer = maxf(0.0, jump_buffer_timer - delta)
+
+# 離陸時に小さく潰し、短時間で通常形状へ戻す。
+func _play_takeoff_feedback() -> void:
+	_kill_movement_feedback_tween()
+	sprite.scale = visual_scale * Vector2(1.08, 0.92)
+	movement_feedback_tween = create_tween()
+	movement_feedback_tween.set_trans(Tween.TRANS_QUAD)
+	movement_feedback_tween.set_ease(Tween.EASE_OUT)
+	movement_feedback_tween.tween_property(sprite, "scale", visual_scale, 0.06)
+
+# 着地点の左右へ小さなドット埃を飛ばす。
+func _spawn_landing_dust() -> void:
+	var root := get_tree().current_scene
+	if root == null:
+		root = get_parent()
+	for direction in [-1.0, 1.0]:
+		for index in 2:
+			var dust := ColorRect.new()
+			dust.color = Color(0.66, 0.60, 0.78, 0.72)
+			dust.size = Vector2(3.0 + index, 3.0 + index)
+			dust.global_position = global_position + Vector2(direction * (5.0 + index * 3.0), -3.0)
+			root.add_child(dust)
+			var drift := Vector2(direction * (12.0 + index * 5.0), -5.0 - index * 2.0)
+			var tween := dust.create_tween()
+			tween.set_parallel(true)
+			tween.tween_property(dust, "global_position", dust.global_position + drift, 0.16)
+			tween.tween_property(dust, "modulate:a", 0.0, 0.16)
+			tween.set_parallel(false)
+			tween.tween_callback(dust.queue_free)
+
+# 競合する離陸・着地変形を停止する。
+func _kill_movement_feedback_tween() -> void:
+	if movement_feedback_tween != null and movement_feedback_tween.is_valid():
+		movement_feedback_tween.kill()
+	movement_feedback_tween = null
+
+# 現在ステージの共通SE再生口へ通知する。
+func _play_stage_sfx(sound_name: StringName) -> void:
+	var root := get_tree().current_scene
+	if root != null and root.has_method("play_sfx"):
+		root.play_sfx(sound_name)
 
 func spawn_death_burst() -> void:
 	var root := get_tree().current_scene

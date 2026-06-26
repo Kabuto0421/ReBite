@@ -13,13 +13,17 @@ const ActionRecordScript := preload("res://scripts/core/ActionRecord.gd")
 @export var smash_impact_end := 0.78 # SMASH開始から攻撃判定が消えるまでの秒数。
 @export var smash_hitbox_offset_x := 46.0 # 攻撃判定を本体前方へずらす距離。
 @export var recall_start_delay := 0.62 # タグ破壊後、再演SMASHを始めるまでの停止時間。
+@export var player_path := NodePath("../Player") # 追跡とSMASH距離判定に使うPlayer。
+@export var smash_range := 150.0 # この距離以内ならSMASHへ入る。
 
 var walk_direction := Vector2.LEFT # タグ保持中に歩いている向き。
+var player: Node # 追跡対象のPlayer。
 
 # 記憶敵、アニメーション、初期SMASH記録を準備する。
 func _ready() -> void:
 	setup_memory_enemy()
 	_build_animations()
+	player = get_node_or_null(player_path)
 	walk_direction = _horizontal_direction(initial_direction)
 	set_facing_direction(walk_direction)
 	prepare_smash_record(walk_direction)
@@ -62,6 +66,25 @@ func set_facing_direction(direction: Vector2) -> void:
 func reverse_walk_direction() -> void:
 	walk_direction *= -1.0
 	set_facing_direction(walk_direction)
+
+# Playerの方向へ歩行向きを更新する。
+func face_player() -> void:
+	if player == null:
+		return
+	walk_direction = _horizontal_direction(player.global_position - global_position)
+	set_facing_direction(walk_direction)
+
+# PlayerがSMASH射程内にいるか返す。
+func is_player_in_smash_range() -> bool:
+	if player == null:
+		return true
+	return absf(player.global_position.x - global_position.x) <= smash_range
+
+# 現在のPlayer位置に向けた自律SMASH記録を作る。
+func build_smash_record_toward_player() -> Resource:
+	face_player()
+	prepare_smash_record(walk_direction)
+	return last_record
 
 # SMASH開始からの経過時間が攻撃区間内か返す。
 func is_smash_impact_active(elapsed: float) -> bool:

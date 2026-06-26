@@ -44,8 +44,43 @@ func _run() -> void:
 	assert(is_equal_approx(boar.velocity.x, committed_record.velocity.x))
 	assert(boar.sprite.animation == &"smash")
 
-	print("BOAR_MONSTER_CHECK_OK")
 	root.remove_child(boar)
 	boar.queue_free()
+	await process_frame
+
+	var player := CharacterBody2D.new()
+	player.name = "Player"
+	player.global_position = Vector2(420, 0)
+	root.add_child(player)
+
+	var chasing_boar = packed_scene.instantiate()
+	chasing_boar.global_position = Vector2.ZERO
+	chasing_boar.smash_range = 120.0
+	root.add_child(chasing_boar)
+	await process_frame
+	await physics_frame
+	chasing_boar.get_node("StateMachine/Idle").wait_time = 0.01
+	chasing_boar.get_node("StateMachine/Telegraph").telegraph_time = 0.2
+	chasing_boar.state_machine.change_state(&"Idle")
+	for _frame in 6:
+		await physics_frame
+	assert(chasing_boar.current_state_name() == &"Recover")
+	assert(chasing_boar.walk_direction == Vector2.RIGHT)
+	assert(chasing_boar.sprite.animation == &"walk")
+
+	for _frame in 10:
+		await physics_frame
+	assert(chasing_boar.current_state_name() == &"Recover")
+	player.global_position = Vector2(60, 0)
+	for _frame in 4:
+		await physics_frame
+	assert(chasing_boar.current_state_name() == &"Telegraph")
+	assert(chasing_boar.last_record.direction == Vector2.RIGHT)
+
+	print("BOAR_MONSTER_CHECK_OK")
+	root.remove_child(chasing_boar)
+	chasing_boar.queue_free()
+	root.remove_child(player)
+	player.queue_free()
 	await process_frame
 	quit(0)
