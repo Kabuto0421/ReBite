@@ -2,7 +2,7 @@
 extends "res://scripts/core/State.gd"
 
 @export var recover_time := 1.0
-@export_range(0.05, 0.5, 0.01) var blocked_recover_time := 0.18
+@export_range(0.05, 1.5, 0.01) var blocked_recover_time := 0.60 # 壁衝突後、逆方向の予備動作へ入るまで停止する時間。
 @export var return_warning_time := 0.22
 var timer := 0.0
 var active_duration := 0.0

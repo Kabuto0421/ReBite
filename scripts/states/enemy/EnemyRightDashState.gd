@@ -31,7 +31,7 @@ func physics_update(delta: float) -> void:
 		owner_node.commit_dash_record(record.direction, &"NATURAL")
 		transition_requested.emit(&"Recover", null)
 	elif owner_node.is_on_wall():
-		owner_node.handle_blocked_dash(record.direction)
+		owner_node.handle_blocked_dash(record)
 		transition_requested.emit(&"Recover", {"blocked": true})
 
 func _play_stage_sfx(sound_name: StringName) -> void:

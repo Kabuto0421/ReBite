@@ -11,7 +11,6 @@ signal landing_contact(trap: Node, impact_position: Vector2, hit: bool) # 岩が
 @export var trap_id: StringName = &"falling_rock" # Encounterで識別する罠ID。
 @export var rock_id: StringName = &"rock_a" # 耐久を消費する岩ID。
 @export var landing_offset := Vector2(0.0, 300.0) # 吊り位置から着地点までの差。
-@export var required_direction := Vector2.LEFT # 支柱破壊に必要なSMASH方向。
 
 var boss: Node # 命中対象BossBoar。
 var active := false # 現在使用可能か。
@@ -50,8 +49,6 @@ func receive_memory_action_push(_source: Node, record: Resource) -> bool:
 	if not active or resolved or record == null:
 		return false
 	if record.action_name != &"smash" or record.source != &"REBITE_REPLAY":
-		return false
-	if record.direction.normalized().dot(required_direction.normalized()) < 0.35:
 		return false
 	_release_rock()
 	return true

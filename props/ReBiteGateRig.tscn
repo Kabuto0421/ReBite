@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3 uid="uid://rebite_gate_rig"]
+
+[ext_resource type="Script" path="res://scripts/stage/ReBiteGateRig.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_switch_hitbox"]
+size = Vector2(6, 10)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gate_collision"]
+size = Vector2(10, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pulley_collision"]
+size = Vector2(38, 15)
+
+[node name="ReBiteGateRig" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Base" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+z_index = 1
+
+[node name="Switch" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+z_index = 2
+
+[node name="SwitchHitbox" type="Area2D" parent="."]
+position = Vector2(-4.5, 7.5)
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SwitchHitbox"]
+shape = SubResource("RectangleShape2D_switch_hitbox")
+
+[node name="PulleyBody" type="StaticBody2D" parent="."]
+position = Vector2(8, -13.5)
+collision_layer = 1
+collision_mask = 0
+
+[node name="PulleyCollision" type="CollisionShape2D" parent="PulleyBody"]
+shape = SubResource("RectangleShape2D_pulley_collision")
+
+[node name="GateBody" type="AnimatableBody2D" parent="."]
+position = Vector2(7, 5)
+collision_layer = 1
+collision_mask = 0
+sync_to_physics = true
+
+[node name="GateSprite" type="Sprite2D" parent="GateBody"]
+texture_filter = 1
+
+[node name="GateCollision" type="CollisionShape2D" parent="GateBody"]
+shape = SubResource("RectangleShape2D_gate_collision")

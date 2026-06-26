@@ -5,8 +5,9 @@ func enter(_payload: Variant = null) -> void:
 	owner_node.play_animation(&"walk")
 
 func physics_update(delta: float) -> void:
+	owner_node.refresh_coyote_window()
 	owner_node.apply_gravity(delta)
-	owner_node.apply_horizontal_input()
+	owner_node.apply_ground_horizontal_input(delta)
 	owner_node.move_and_slide()
 
 	if not owner_node.is_on_floor():
@@ -14,7 +15,8 @@ func physics_update(delta: float) -> void:
 
 func handle_input(event: InputEvent) -> void:
 	if event.is_action_pressed("jump"):
-		owner_node.jump()
-		transition_requested.emit(&"Air", null)
+		owner_node.buffer_jump()
+		if owner_node.try_consume_buffered_jump():
+			transition_requested.emit(&"Air", null)
 	elif event.is_action_pressed("bite"):
 		transition_requested.emit(&"BiteWindup", owner_node.prepare_bite_context())
