@@ -4,6 +4,11 @@ extends Node2D
 const SpriteFrameBuilder := preload("res://scripts/core/SpriteFrameBuilder.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
 const StageScoreStoreScript := preload("res://scripts/stage/StageScoreStore.gd")
+const DeviceProfileScript := preload("res://scripts/platform/DeviceProfile.gd")
+const TOP_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_top_fang.png"
+const BOTTOM_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_bottom_fang.png"
+const KEY_TEXTURE_PATH := "res://assets/ui/bite_hint_key_k.png"
+const MOBILE_BITE_ICON_TEXTURE_PATH := "res://assets/ui/mobile/mobile_bite_button.png"
 const BOX_SIZE := Vector2(132, 104) # ステージ箱の表示サイズ。
 const BOX_GAP := 44.0 # 箱同士の間隔。
 const BOX_Y := 136.0 # Stage0箱の上端Y座標。
@@ -15,6 +20,11 @@ const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤー�
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
 const ROOM_WIDTH := 1280.0 # ステージ選択画面の基準幅。
 const ROOM_HEIGHT := 720.0 # ステージ選択画面の基準高さ。
+const BITE_HINT_FANG_SCALE := 0.68 # 選択箱を囲う牙の表示倍率。大きくすると箱角への噛み込みが強く見える。
+const BITE_HINT_KEY_SCALE := 0.58 # Kキートップの表示倍率。大きくすると操作案内が強く見える。
+const BITE_HINT_TOP_FANG_INSET := Vector2(21.0, 11.0) # 選択箱の左上/右上角から牙を内側へ寄せる量。
+const BITE_HINT_BOTTOM_FANG_INSET := Vector2(21.0, 5.0) # 選択箱の左下/右下角から牙を内側へ寄せる量。
+const BITE_HINT_KEY_OFFSET := Vector2(0.0, -14.0) # 選択箱上辺中央からK表示をずらす量。
 
 var stage_paths: Array[String] = [ # 各箱が開くステージScene。
 	"res://stage/Stage0.tscn",
@@ -36,11 +46,15 @@ var player_sprite: AnimatedSprite2D # 箱の前にいるプレイヤー。
 var stage_bgm: Node # 選択画面BGMを担当する部品。
 var moving := false # 噛み演出中かどうか。
 var bite_hint: Node2D # 選択箱をKで噛むことを示す表示。
+var top_fang_texture: Texture2D # 上牙マーカー画像。
+var bottom_fang_texture: Texture2D # 下牙マーカー画像。
+var key_texture: Texture2D # Kキートップ画像。
 var unlocked_indices: Array[int] = [] # 選択可能なステージ番号。
 
 # 画面要素を生成する。
 func _ready() -> void:
 	_refresh_unlocked_indices()
+	_load_hint_textures()
 	_build_background()
 	_build_bgm()
 	_build_stage_boxes()
@@ -259,6 +273,12 @@ func _refresh_unlocked_indices() -> void:
 func _is_stage_unlocked(index: int) -> bool:
 	return StageScoreStoreScript.is_stage_unlocked(_stage_id_for_index(index))
 
+# 選択箱を囲う牙とK表示に使う画像を読み込む。
+func _load_hint_textures() -> void:
+	top_fang_texture = load(TOP_FANG_TEXTURE_PATH) as Texture2D
+	bottom_fang_texture = load(BOTTOM_FANG_TEXTURE_PATH) as Texture2D
+	key_texture = load(MOBILE_BITE_ICON_TEXTURE_PATH if DeviceProfileScript.should_use_touch_bite_hint() else KEY_TEXTURE_PATH) as Texture2D
+
 # Kで選ぶことを選択箱の近くに表示する。
 func _build_bite_hint() -> void:
 	bite_hint = Node2D.new()
@@ -266,34 +286,25 @@ func _build_bite_hint() -> void:
 	bite_hint.z_index = 12
 	add_child(bite_hint)
 
-	var key := Label.new()
-	key.name = "Key"
-	key.text = "K"
-	key.position = Vector2(-24, -18)
-	key.size = Vector2(48, 36)
-	key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	key.add_theme_font_size_override("font_size", 26)
-	key.add_theme_color_override("font_color", Color("#fff0a8"))
-	key.add_theme_color_override("font_shadow_color", Color("#10101a"))
-	key.add_theme_constant_override("shadow_offset_x", 3)
-	key.add_theme_constant_override("shadow_offset_y", 3)
-	bite_hint.add_child(key)
+	_add_hint_sprite("BiteHintTopLeft", top_fang_texture, Vector2(-BOX_SIZE.x * 0.5 + BITE_HINT_TOP_FANG_INSET.x, -BOX_SIZE.y * 0.5 + BITE_HINT_TOP_FANG_INSET.y), BITE_HINT_FANG_SCALE, false, false)
+	_add_hint_sprite("BiteHintTopRight", top_fang_texture, Vector2(BOX_SIZE.x * 0.5 - BITE_HINT_TOP_FANG_INSET.x, -BOX_SIZE.y * 0.5 + BITE_HINT_TOP_FANG_INSET.y), BITE_HINT_FANG_SCALE, true, false)
+	_add_hint_sprite("BiteHintBottomLeft", bottom_fang_texture, Vector2(-BOX_SIZE.x * 0.5 + BITE_HINT_BOTTOM_FANG_INSET.x, BOX_SIZE.y * 0.5 - BITE_HINT_BOTTOM_FANG_INSET.y), BITE_HINT_FANG_SCALE, true, true)
+	_add_hint_sprite("BiteHintBottomRight", bottom_fang_texture, Vector2(BOX_SIZE.x * 0.5 - BITE_HINT_BOTTOM_FANG_INSET.x, BOX_SIZE.y * 0.5 - BITE_HINT_BOTTOM_FANG_INSET.y), BITE_HINT_FANG_SCALE, false, true)
+	_add_hint_sprite("BiteHintKey", key_texture, Vector2(0, -BOX_SIZE.y * 0.5) + BITE_HINT_KEY_OFFSET, BITE_HINT_KEY_SCALE, false, false)
 
-	var top_fang := _create_hint_fang(Vector2(0, -18), false)
-	var bottom_fang := _create_hint_fang(Vector2(0, 18), true)
-	bite_hint.add_child(top_fang)
-	bite_hint.add_child(bottom_fang)
-
-# 簡易的な牙マーカーを作る。
-func _create_hint_fang(position_value: Vector2, flip_vertical: bool) -> Polygon2D:
-	var fang := Polygon2D.new()
-	fang.position = position_value
-	fang.polygon = PackedVector2Array([Vector2(-10, -7), Vector2(10, -7), Vector2(0, 12)])
-	fang.color = Color("#99e8ff")
-	if flip_vertical:
-		fang.scale.y = -1.0
-	return fang
+# ヒント用Spriteを追加する。
+func _add_hint_sprite(sprite_name: String, texture: Texture2D, position_value: Vector2, scale_value: float, flip_h := false, flip_v := false) -> Sprite2D:
+	var sprite := Sprite2D.new()
+	sprite.name = sprite_name
+	sprite.texture = texture
+	sprite.centered = true
+	sprite.position = position_value
+	sprite.scale = Vector2.ONE * scale_value
+	sprite.flip_h = flip_h
+	sprite.flip_v = flip_v
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	bite_hint.add_child(sprite)
+	return sprite
 
 # プレイヤーキャラクターを作る。
 func _build_player() -> void:
@@ -326,7 +337,7 @@ func _update_selection(animated := true) -> void:
 		player_sprite.global_position = target_position
 	player_sprite.play(&"walk")
 	if bite_hint != null:
-		bite_hint.global_position = target_position + Vector2(0, -32)
+		bite_hint.global_position = boxes[selected_index].global_position + BOX_SIZE * 0.5
 		bite_hint.visible = _is_stage_unlocked(selected_index)
 
 # 指定箱の前に立つプレイヤー位置を返す。

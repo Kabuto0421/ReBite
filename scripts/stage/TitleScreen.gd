@@ -30,7 +30,14 @@ const BUTTON_POSITIONS := [Vector2(640, 450), Vector2(640, 575)]
 const PLAYER_SCALE := Vector2(1.9, 1.9)
 const PLAYER_X_OFFSET := -280.0
 const BITE_LUNGE_DISTANCE := 86.0
-const BITE_HINT_BUTTON_OFFSET := Vector2(-166, -30)
+const BITE_HINT_FANG_SCALE := 0.58
+const BITE_HINT_KEY_SCALE := 1.42
+const BITE_HINT_TOUCH_KEY_SCALE := 0.36
+const BITE_HINT_TEXT_SCALE := 0.78
+const BITE_HINT_FANG_TOP_INSET := Vector2(40.0, 22.0)
+const BITE_HINT_FANG_BOTTOM_INSET := Vector2(40.0, 16.0)
+const BITE_HINT_KEY_OFFSET := Vector2(-42.0, -86.0)
+const BITE_HINT_TEXT_OFFSET := Vector2(38.0, -86.0)
 const SETTINGS_ROW_POSITIONS: Array[Vector2] = [Vector2(640, 360), Vector2(640, 435)]
 const SETTINGS_SLIDER_WIDTH := 300.0
 
@@ -229,8 +236,8 @@ func _build_bite_hint() -> void:
 	key.name = "Key"
 	key.texture = bite_hint_key_texture
 	key.centered = true
-	key.position = Vector2(0, 0)
-	key.scale = Vector2(0.36, 0.36) if DeviceProfileScript.should_use_touch_bite_hint() else Vector2(1.42, 1.42)
+	key.position = BITE_HINT_KEY_OFFSET
+	key.scale = Vector2.ONE * (BITE_HINT_TOUCH_KEY_SCALE if DeviceProfileScript.should_use_touch_bite_hint() else BITE_HINT_KEY_SCALE)
 	key.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(key)
 
@@ -238,21 +245,24 @@ func _build_bite_hint() -> void:
 	text.name = "Text"
 	text.texture = bite_hint_text_texture
 	text.centered = true
-	text.position = Vector2(70, 0)
-	text.scale = Vector2(0.78, 0.78)
+	text.position = BITE_HINT_TEXT_OFFSET
+	text.scale = Vector2.ONE * BITE_HINT_TEXT_SCALE
 	text.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(text)
 
 	for config in [
-		{"name": "TopFang", "texture": bite_hint_top_fang_texture, "position": Vector2(0, -25), "flip_v": false},
-		{"name": "BottomFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(0, 25), "flip_v": true},
+		{"name": "TopLeftFang", "texture": bite_hint_top_fang_texture, "position": Vector2(-BUTTON_SIZE.x * 0.5 + BITE_HINT_FANG_TOP_INSET.x, -BUTTON_SIZE.y * 0.5 + BITE_HINT_FANG_TOP_INSET.y), "flip_h": false, "flip_v": false},
+		{"name": "TopRightFang", "texture": bite_hint_top_fang_texture, "position": Vector2(BUTTON_SIZE.x * 0.5 - BITE_HINT_FANG_TOP_INSET.x, -BUTTON_SIZE.y * 0.5 + BITE_HINT_FANG_TOP_INSET.y), "flip_h": true, "flip_v": false},
+		{"name": "BottomLeftFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(-BUTTON_SIZE.x * 0.5 + BITE_HINT_FANG_BOTTOM_INSET.x, BUTTON_SIZE.y * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.y), "flip_h": true, "flip_v": true},
+		{"name": "BottomRightFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(BUTTON_SIZE.x * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.x, BUTTON_SIZE.y * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.y), "flip_h": false, "flip_v": true},
 	]:
 		var fang := Sprite2D.new()
 		fang.name = config.name
 		fang.texture = config.texture
 		fang.centered = true
 		fang.position = config.position
-		fang.scale = Vector2(0.58, 0.58)
+		fang.scale = Vector2.ONE * BITE_HINT_FANG_SCALE
+		fang.flip_h = config.flip_h
 		fang.flip_v = config.flip_v
 		fang.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		bite_hint.add_child(fang)
@@ -285,7 +295,7 @@ func _update_selection(animated := true) -> void:
 		tween.tween_property(player_sprite, "global_position", target_position, 0.12)
 	else:
 		player_sprite.global_position = target_position
-	bite_hint.global_position = menu_buttons[selected_index].global_position + BITE_HINT_BUTTON_OFFSET
+	bite_hint.global_position = menu_buttons[selected_index].global_position
 	player_sprite.flip_h = false
 	player_sprite.play(&"walk")
 
