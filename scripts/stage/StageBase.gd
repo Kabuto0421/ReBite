@@ -5,6 +5,8 @@ const PredictionArrowScript := preload("res://scripts/stage/PredictionArrow.gd")
 const StateMachineScript := preload("res://scripts/core/StateMachine.gd")
 const StageNormalState := preload("res://scripts/states/stage/StageNormalState.gd")
 const StageSpikeImpactState := preload("res://scripts/states/stage/StageSpikeImpactState.gd")
+const StageClearState := preload("res://scripts/states/stage/StageClearState.gd")
+const StageScoreStoreScript := preload("res://scripts/stage/StageScoreStore.gd")
 const StageHudScript := preload("res://scripts/stage/StageHud.gd")
 const StageCameraRigScript := preload("res://scripts/stage/StageCameraRig.gd")
 const SpikeImpactPresenterScript := preload("res://scripts/stage/SpikeImpactPresenter.gd")
@@ -15,10 +17,19 @@ const EditableSpikesScript := preload("res://scripts/stage/EditableSpikes.gd")
 const StageSfxScript := preload("res://scripts/stage/StageSfx.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
 const MobileControlsScript := preload("res://scripts/ui/MobileControls.gd")
+const SpriteFrameBuilder := preload("res://scripts/core/SpriteFrameBuilder.gd")
 
 @export var next_stage_path := "" # クリア後に遷移する次ステージ。
 @export var mobile_controls_force_visible := false # PC上でもスマホ操作UIを強制表示するか。
 @export var mobile_replay_button_visible := false # スマホ操作UIにリプレイボタンを出すか。
+
+@export_group("Score")
+@export var score_base := 1000 # クリア時に必ず入る基礎点。
+@export var score_time_bonus_max := 3000 # 早解きボーナスの最大値。
+@export var score_time_bonus_decay_per_second := 25 # 1秒ごとに減る早解きボーナス。
+@export var score_no_death_bonus := 1500 # ノーデス時の最大ボーナス。
+@export var score_death_penalty := 500 # 死亡1回ごとに減るボーナス。
+@export var score_star_thresholds := PackedInt32Array([1800, 3000, 4500]) # 1/2/3星に必要なスコア。
 
 @export_group("Stage Briefing")
 @export var stage_display_name := "" # HUDに表示するステージ名。空ならルートノード名を使う。
@@ -74,6 +85,13 @@ var camera_base_zoom := Vector2(1.35, 1.35) # 通常時のカメラズーム。
 var camera_cinematic := false # 通常追従ではないカメラ演出中かどうか。
 var spike_impact_freeze_active := false # 針ヒットで世界停止中かどうか。
 var locked_bite_target: Node # 噛み演出中に表示を固定する対象。
+var stage_elapsed_seconds := 0.0 # 現在ステージの経過時間。
+var stage_death_count := 0 # 現在ステージでプレイヤーが死亡した回数。
+var stage_result_layer: CanvasLayer # クリア後のスコアと選択UI。
+var stage_result_selected_index := 1 # 0=REPLAY、1=NEXT。
+var stage_result_choices: Array[Dictionary] = [] # リザルト選択肢のノード参照。
+var stage_result_player: AnimatedSprite2D # リザルト選択用のプレイヤー表示。
+var stage_result_moving := false # リザルトの噛み演出中かどうか。
 
 # ステージ共通部品を順番に初期化する。
 func _ready() -> void:
@@ -99,6 +117,8 @@ func _exit_tree() -> void:
 
 # 毎フレームの表示更新とステージ状態更新を行う。
 func _process(delta: float) -> void:
+	if not stage_cleared:
+		stage_elapsed_seconds += delta
 	_update_memory_focus()
 	# 画面下部の大きなリプレイ案内は一時的に非表示にする。
 	# _update_replay_prompt()
@@ -113,6 +133,9 @@ func _physics_process(delta: float) -> void:
 
 # リプレイ入力を受け付ける。
 func _unhandled_input(event: InputEvent) -> void:
+	if stage_cleared and stage_state_machine != null:
+		stage_state_machine.handle_input(event)
+		return
 	if event.is_action_pressed("replay"):
 		get_tree().reload_current_scene()
 
@@ -126,6 +149,8 @@ func _setup_entities() -> void:
 	player.bite_hit.connect(_on_player_bite_hit)
 	player.bite_contact.connect(_on_player_bite_contact)
 	player.bite_missed.connect(_on_player_bite_missed)
+	if player.has_signal("death_started") and not player.death_started.is_connected(_on_player_death_started):
+		player.death_started.connect(_on_player_death_started)
 
 	enemy_tracker = StageEnemyTrackerScript.new()
 	enemy_tracker.name = "StageEnemyTracker"
@@ -136,6 +161,8 @@ func _setup_entities() -> void:
 	enemies = enemy_tracker.enemies
 	defeated_enemies = enemy_tracker.defeated_enemies
 	stage_cleared = false
+	stage_elapsed_seconds = 0.0
+	stage_death_count = 0
 	locked_bite_target = null
 	skull = enemy_tracker.first_enemy()
 
@@ -275,6 +302,10 @@ func _build_stage_state_machine() -> void:
 	var spike_impact := StageSpikeImpactState.new()
 	spike_impact.name = "SpikeImpact"
 	stage_state_machine.add_child(spike_impact)
+
+	var clear := StageClearState.new()
+	clear.name = "Clear"
+	stage_state_machine.add_child(clear)
 
 	stage_state_machine.initialize(self, &"Normal")
 
@@ -427,10 +458,286 @@ func complete_stage(message: String = "STAGE CLEAR") -> void:
 	stage_cleared = true
 	stage_hud.set_clear_text(message)
 	_shake_camera(16.0, 0.22)
+	stage_state_machine.change_state(&"Clear", {
+		"message": message,
+	})
+
+# プレイヤー死亡数をスコア用に記録する。
+func _on_player_death_started() -> void:
+	if stage_cleared:
+		return
+	stage_death_count += 1
+
+# クリア時のスコア内訳を作る。
+func build_stage_score_result() -> Dictionary:
+	var time_bonus := maxi(0, int(round(float(score_time_bonus_max) - stage_elapsed_seconds * float(score_time_bonus_decay_per_second))))
+	var death_bonus := maxi(0, score_no_death_bonus - stage_death_count * score_death_penalty)
+	var score := score_base + time_bonus + death_bonus
+	var stars := _stars_for_score(score)
+	return {
+		"stage_id": _score_stage_id(),
+		"stage_name": _resolved_stage_display_name(),
+		"score": score,
+		"stars": stars,
+		"elapsed": stage_elapsed_seconds,
+		"deaths": stage_death_count,
+		"base": score_base,
+		"time_bonus": time_bonus,
+		"death_bonus": death_bonus,
+	}
+
+# スコアから星数を計算する。
+func _stars_for_score(score: int) -> int:
+	var stars := 0
+	for threshold in score_star_thresholds:
+		if score >= int(threshold):
+			stars += 1
+	return stars
+
+# スコア保存に使うステージIDを返す。
+func _score_stage_id() -> String:
+	var scene_path := scene_file_path
+	if scene_path.is_empty() and get_tree().current_scene != null:
+		scene_path = get_tree().current_scene.scene_file_path
+	if scene_path.is_empty():
+		return str(name)
+	return scene_path.get_file().get_basename()
+
+# クリア後のスコア画面を表示する。
+func show_stage_result(payload: Dictionary) -> void:
+	if stage_result_layer != null:
+		return
+	var message := str(payload.get("message", "STAGE CLEAR"))
+	var result := build_stage_score_result()
+	var best := StageScoreStoreScript.record_result(str(result.get("stage_id", _score_stage_id())), result)
+	stage_result_selected_index = 1 if not next_stage_path.is_empty() else 0
+	stage_result_choices.clear()
+	stage_result_moving = false
+
+	stage_result_layer = CanvasLayer.new()
+	stage_result_layer.name = "StageResultLayer"
+	stage_result_layer.layer = 80
+	add_child(stage_result_layer)
+
+	var dim := ColorRect.new()
+	dim.name = "Dim"
+	dim.color = Color(0.0, 0.0, 0.0, 0.66)
+	dim.size = Vector2(1280, 720)
+	stage_result_layer.add_child(dim)
+
+	var panel := Control.new()
+	panel.name = "Panel"
+	panel.position = Vector2(310, 92)
+	panel.size = Vector2(660, 470)
+	stage_result_layer.add_child(panel)
+
+	var title := _create_result_label(message, 56, Color("#fff2a8"), Vector2(0, 0), Vector2(660, 70))
+	panel.add_child(title)
+
+	var stage_name := _create_result_label(str(result.get("stage_name", _resolved_stage_display_name())), 22, Color("#b7dcff"), Vector2(0, 74), Vector2(660, 30))
+	panel.add_child(stage_name)
+
+	var star_label := _create_result_label(_star_text(int(result.get("stars", 0))), 46, Color("#ffd45b"), Vector2(0, 110), Vector2(660, 58))
+	panel.add_child(star_label)
+
+	var score_label := _create_result_label("SCORE  %d" % int(result.get("score", 0)), 42, Color.WHITE, Vector2(0, 180), Vector2(660, 54))
+	panel.add_child(score_label)
+
+	var detail := _create_result_label(
+		"TIME %.2fs  +%d    DEATH %d  +%d    BEST %d" % [
+			float(result.get("elapsed", 0.0)),
+			int(result.get("time_bonus", 0)),
+			int(result.get("deaths", 0)),
+			int(result.get("death_bonus", 0)),
+			int(best.get("score", result.get("score", 0))),
+		],
+		21,
+		Color("#d5d9e2"),
+		Vector2(0, 244),
+		Vector2(660, 32)
+	)
+	panel.add_child(detail)
+
+	_create_result_choice(panel, "REPLAY", 0, Vector2(92, 330))
 	if not next_stage_path.is_empty():
-			var tween := create_tween()
-			tween.tween_interval(1.15)
-			tween.tween_callback(func(): get_tree().change_scene_to_file(next_stage_path))
+		_create_result_choice(panel, "NEXT", 1, Vector2(382, 330))
+
+	stage_result_player = AnimatedSprite2D.new()
+	stage_result_player.name = "ResultPlayer"
+	var frames := SpriteFrameBuilder.from_folder("res://assets/player/walk", &"walk", 8.0, true)
+	SpriteFrameBuilder.add_animation(frames, "res://assets/player/bite", &"bite", 12.0, false)
+	stage_result_player.sprite_frames = frames
+	stage_result_player.scale = Vector2(1.75, 1.75)
+	stage_result_player.play(&"walk")
+	panel.add_child(stage_result_player)
+	_update_stage_result_selection(false)
+
+# クリア後のスコア画面を消す。
+func hide_stage_result() -> void:
+	if stage_result_layer != null:
+		stage_result_layer.queue_free()
+	stage_result_layer = null
+	stage_result_choices.clear()
+	stage_result_player = null
+	stage_result_moving = false
+
+# リザルト選択の入力を処理する。
+func handle_stage_result_input(event: InputEvent) -> void:
+	if stage_result_layer == null or stage_result_moving:
+		return
+	if event.is_action_pressed("replay"):
+		get_tree().reload_current_scene()
+		return
+	if event.is_action_pressed("move_left"):
+		_select_stage_result_choice(-1)
+	elif event.is_action_pressed("move_right"):
+		_select_stage_result_choice(1)
+	elif event.is_action_pressed("bite"):
+		_bite_stage_result_choice()
+
+# リザルトのテキストラベルを作る。
+func _create_result_label(text: String, font_size: int, color: Color, position: Vector2, size: Vector2) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.position = position
+	label.size = size
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.85))
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+	return label
+
+# 星数を文字表示へ変換する。
+func _star_text(stars: int) -> String:
+	var text := ""
+	for i in 3:
+		text += "★" if i < stars else "☆"
+	return text
+
+# REPLAY/NEXTの噛み選択箱を作る。
+func _create_result_choice(parent: Node, text: String, index: int, position: Vector2) -> void:
+	var root := Node2D.new()
+	root.name = "Choice%s" % text
+	root.position = position
+	parent.add_child(root)
+
+	var shadow := ColorRect.new()
+	shadow.color = Color(0.0, 0.0, 0.0, 0.38)
+	shadow.position = Vector2(8, 10)
+	shadow.size = Vector2(186, 76)
+	root.add_child(shadow)
+
+	var face := ColorRect.new()
+	face.name = "Face"
+	face.color = Color("#f3f0d6")
+	face.size = Vector2(186, 76)
+	root.add_child(face)
+
+	var label := _create_result_label(text, 28, Color("#1b1730"), Vector2.ZERO, Vector2(186, 76))
+	root.add_child(label)
+
+	stage_result_choices.append({
+		"index": index,
+		"node": root,
+		"face": face,
+	})
+
+# リザルト選択を左右へ移動する。
+func _select_stage_result_choice(delta: int) -> void:
+	if stage_result_choices.is_empty():
+		return
+	var current := _stage_result_choice_array_index(stage_result_selected_index)
+	current = posmod(current + delta, stage_result_choices.size())
+	stage_result_selected_index = int(stage_result_choices[current].index)
+	_update_stage_result_selection(true)
+
+# 現在の選択IDが配列上のどこか返す。
+func _stage_result_choice_array_index(choice_index: int) -> int:
+	for i in stage_result_choices.size():
+		if int(stage_result_choices[i].index) == choice_index:
+			return i
+	return 0
+
+# リザルト選択状態の見た目を更新する。
+func _update_stage_result_selection(animated := true) -> void:
+	for choice in stage_result_choices:
+		var selected := int(choice.get("index", -1)) == stage_result_selected_index
+		var face := choice.get("face") as ColorRect
+		var node := choice.get("node") as Node2D
+		face.color = Color("#fff0a8") if selected else Color("#f3f0d6")
+		node.scale = Vector2(1.06, 1.06) if selected else Vector2.ONE
+
+	if stage_result_player == null:
+		return
+	var target := _stage_result_player_position()
+	if animated:
+		var tween := create_tween()
+		tween.set_trans(Tween.TRANS_BACK)
+		tween.set_ease(Tween.EASE_OUT)
+		tween.tween_property(stage_result_player, "position", target, 0.12)
+	else:
+		stage_result_player.position = target
+	stage_result_player.play(&"walk")
+
+# 選択箱の手前に立つプレイヤー位置を返す。
+func _stage_result_player_position() -> Vector2:
+	for choice in stage_result_choices:
+		if int(choice.get("index", -1)) == stage_result_selected_index:
+			var node := choice.get("node") as Node2D
+			return node.position + Vector2(93, 120)
+	return Vector2(330, 450)
+
+# 選択中の箱へ噛みつき、対応する遷移を実行する。
+func _bite_stage_result_choice() -> void:
+	stage_result_moving = true
+	var selected_choice: Dictionary
+	for choice in stage_result_choices:
+		if int(choice.get("index", -1)) == stage_result_selected_index:
+			selected_choice = choice
+			break
+	var choice_node := selected_choice.get("node") as Node2D
+	var start_position := stage_result_player.position
+	var bite_position := choice_node.position + Vector2(93, 78)
+	stage_result_player.play(&"bite")
+	play_sfx(&"bite_hit")
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_QUART)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(stage_result_player, "position", bite_position, 0.10)
+	tween.tween_callback(func(): _break_stage_result_choice(choice_node))
+	tween.tween_interval(0.18)
+	tween.tween_callback(_activate_stage_result_choice)
+
+# 選択箱を簡易破砕する。
+func _break_stage_result_choice(choice_node: Node2D) -> void:
+	if choice_node == null:
+		return
+	choice_node.visible = false
+	for i in 18:
+		var shard := ColorRect.new()
+		shard.color = [Color("#fff0a8"), Color("#f3f0d6"), Color("#726b8e")][i % 3]
+		shard.size = Vector2(randf_range(7.0, 16.0), randf_range(5.0, 14.0))
+		shard.global_position = choice_node.global_position + Vector2(randf_range(10.0, 176.0), randf_range(8.0, 66.0))
+		stage_result_layer.add_child(shard)
+		var angle := randf_range(-PI * 0.95, -PI * 0.05)
+		var distance := randf_range(50.0, 118.0)
+		var tween := shard.create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(shard, "global_position", shard.global_position + Vector2(cos(angle), sin(angle)) * distance, 0.36)
+		tween.tween_property(shard, "rotation", randf_range(-2.4, 2.4), 0.36)
+		tween.tween_property(shard, "modulate:a", 0.0, 0.36)
+		tween.set_parallel(false)
+		tween.tween_callback(shard.queue_free)
+
+# リザルト選択の行き先へ遷移する。
+func _activate_stage_result_choice() -> void:
+	if stage_result_selected_index == 0 or next_stage_path.is_empty():
+		get_tree().reload_current_scene()
+	else:
+		get_tree().change_scene_to_file(next_stage_path)
 
 # 噛み成功時のカメラ演出を再生する。
 func _play_bite_camera(target: Node) -> void:

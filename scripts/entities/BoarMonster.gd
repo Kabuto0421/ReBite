@@ -17,6 +17,7 @@ enum BehaviorMode { PLAYER_CHASE, PATROL_CARRIER }
 @export var recall_start_delay := 0.62 # タグ破壊後、再演SMASHを始めるまでの停止時間。
 @export var player_path := NodePath("../Player") # 追跡とSMASH距離判定に使うPlayer。
 @export var smash_range := 150.0 # この距離以内ならSMASHへ入る。
+@export var smash_lane_y_tolerance := 44.0 # PlayerとのY差がこの範囲内の時だけSMASHする。
 @export var behavior_mode := BehaviorMode.PLAYER_CHASE # Playerを追うか、巡回点で記憶を運ぶか。
 
 @export_group("Patrol Carrier")
@@ -99,6 +100,8 @@ func face_player() -> void:
 func is_player_in_smash_range() -> bool:
 	if player == null:
 		return true
+	if absf(player.global_position.y - global_position.y) > smash_lane_y_tolerance:
+		return false
 	return absf(player.global_position.x - global_position.x) <= smash_range
 
 # 現在の行動原理に応じた自律SMASH記録を作る。

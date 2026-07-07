@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://entities/boar_monster.tscn" id="8_boar"]
 [ext_resource type="Script" path="res://scripts/stage/GoalArea.gd" id="9_goal"]
 [ext_resource type="PackedScene" path="res://props/GuidanceLantern.tscn" id="10_lantern"]
+[ext_resource type="PackedScene" path="res://props/TauntStake.tscn" id="11_stake"]
 
 [node name="Stage9" type="Node2D"]
 script = ExtResource("1_stage")
@@ -123,12 +124,16 @@ initial_dash_memory = 2
 position = Vector2(640, 288)
 walk_speed = 72.0
 smash_range = 96.0
+smash_lane_y_tolerance = 40.0
 behavior_mode = 1
 patrol_smash_point = Vector2(640, 288)
 patrol_turn_point = Vector2(980, 288)
 patrol_branch_point = Vector2(1190, 288)
 patrol_smash_direction = Vector2(-1, 0)
 patrol_arrival_distance = 16.0
+
+[node name="TauntStake_A" parent="." instance=ExtResource("11_stake")]
+position = Vector2(596, 288)
 
 [node name="GuidanceLantern_A" parent="." instance=ExtResource("10_lantern")]
 position = Vector2(640, 216)

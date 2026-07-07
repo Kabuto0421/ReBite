@@ -3,12 +3,13 @@ extends Node2D
 
 const SpriteFrameBuilder := preload("res://scripts/core/SpriteFrameBuilder.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
-const BOX_SIZE := Vector2(142, 118) # ステージ箱の表示サイズ。
-const BOX_GAP := 35.0 # 箱同士の間隔。
-const BOX_Y := 220.0 # 箱の上端Y座標。
-const BOX_ROW_GAP := 150.0 # 箱の段同士の間隔。
+const StageScoreStoreScript := preload("res://scripts/stage/StageScoreStore.gd")
+const BOX_SIZE := Vector2(132, 104) # ステージ箱の表示サイズ。
+const BOX_GAP := 44.0 # 箱同士の間隔。
+const BOX_Y := 148.0 # 箱の上端Y座標。
+const BOX_ROW_GAP := 154.0 # 箱の段同士の間隔。
 const BOX_COLUMNS := 5 # 1段に並べる箱数。
-const PLAYER_Y_OFFSET := 66.0 # プレイヤーが箱から離れる距離。
+const PLAYER_Y_OFFSET := 62.0 # プレイヤーが箱から離れる距離。
 const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤーの表示倍率。
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
 
@@ -85,6 +86,7 @@ func _build_bgm() -> void:
 func _build_stage_boxes() -> void:
 	var total_width := BOX_COLUMNS * BOX_SIZE.x + (BOX_COLUMNS - 1) * BOX_GAP
 	var start_x := (1280.0 - total_width) * 0.5
+	_build_route_tracks(start_x)
 	for i in stage_paths.size():
 		var box := _create_stage_box(i)
 		var column := i % BOX_COLUMNS
@@ -93,7 +95,34 @@ func _build_stage_boxes() -> void:
 		add_child(box)
 		boxes.append(box)
 
-# 1つぶんの白いステージ箱を作る。
+# 箱の下をつなぐレールと足場を描く。
+func _build_route_tracks(start_x: float) -> void:
+	var rows := int(ceil(float(stage_paths.size()) / float(BOX_COLUMNS)))
+	for row in rows:
+		var count := mini(BOX_COLUMNS, stage_paths.size() - row * BOX_COLUMNS)
+		var y := BOX_Y + row * BOX_ROW_GAP + BOX_SIZE.y + 50.0
+		var first_center := start_x + BOX_SIZE.x * 0.5
+		var last_center := start_x + (count - 1) * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5
+		_add_track_bar(Vector2(first_center - 42.0, y), Vector2(last_center - first_center + 84.0, 16.0), Color("#3a254e"))
+		_add_track_bar(Vector2(first_center - 42.0, y + 16.0), Vector2(last_center - first_center + 84.0, 8.0), Color("#17101f"))
+		for column in count:
+			var center_x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5
+			_add_track_bar(Vector2(center_x - 46.0, y - 8.0), Vector2(92.0, 10.0), Color("#d5a53c"))
+	if rows > 1:
+		for column in BOX_COLUMNS:
+			var x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5 - 8.0
+			_add_track_bar(Vector2(x, BOX_Y + BOX_SIZE.y + 58.0), Vector2(16.0, (rows - 1) * BOX_ROW_GAP), Color("#241831"))
+
+# レール用の矩形を追加する。
+func _add_track_bar(position: Vector2, size: Vector2, color: Color) -> void:
+	var bar := ColorRect.new()
+	bar.color = color
+	bar.position = position
+	bar.size = size
+	bar.z_index = -8
+	add_child(bar)
+
+# 1つぶんのステージ箱を作る。
 func _create_stage_box(stage_number: int) -> Node2D:
 	var root := Node2D.new()
 	root.name = "StageBox%d" % stage_number
@@ -106,44 +135,57 @@ func _create_stage_box(stage_number: int) -> Node2D:
 
 	var face := ColorRect.new()
 	face.name = "Face"
-	face.color = Color(0.94, 0.95, 0.92)
+	face.color = Color("#eee5c0")
 	face.size = BOX_SIZE
 	root.add_child(face)
 
 	var top_edge := ColorRect.new()
-	top_edge.color = Color(1.0, 1.0, 1.0)
+	top_edge.color = Color("#fff6d8")
 	top_edge.size = Vector2(BOX_SIZE.x, 10)
 	root.add_child(top_edge)
 
 	var left_edge := ColorRect.new()
-	left_edge.color = Color(1.0, 1.0, 1.0)
+	left_edge.color = Color("#fff6d8")
 	left_edge.size = Vector2(10, BOX_SIZE.y)
 	root.add_child(left_edge)
 
 	var right_edge := ColorRect.new()
-	right_edge.color = Color(0.68, 0.7, 0.72)
+	right_edge.color = Color("#7b6684")
 	right_edge.position = Vector2(BOX_SIZE.x - 10, 0)
 	right_edge.size = Vector2(10, BOX_SIZE.y)
 	root.add_child(right_edge)
 
 	var bottom_edge := ColorRect.new()
-	bottom_edge.color = Color(0.62, 0.64, 0.66)
+	bottom_edge.color = Color("#5c4c68")
 	bottom_edge.position = Vector2(0, BOX_SIZE.y - 10)
 	bottom_edge.size = Vector2(BOX_SIZE.x, 10)
 	root.add_child(bottom_edge)
 
 	var label := Label.new()
-	label.text = "Stage\n%d" % stage_number
-	label.position = Vector2(0, 20)
-	label.size = Vector2(BOX_SIZE.x, 80)
+	label.text = "STAGE\n%d" % stage_number
+	label.position = Vector2(0, 13)
+	label.size = Vector2(BOX_SIZE.x, 64)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 28)
+	label.add_theme_font_size_override("font_size", 24)
 	label.add_theme_color_override("font_color", Color(0.08, 0.085, 0.1))
-	label.add_theme_color_override("font_shadow_color", Color(0.86, 0.88, 0.9))
+	label.add_theme_color_override("font_shadow_color", Color("#cfae62"))
 	label.add_theme_constant_override("shadow_offset_x", 2)
 	label.add_theme_constant_override("shadow_offset_y", 2)
 	root.add_child(label)
+
+	var stars := Label.new()
+	stars.text = _stage_star_text(stage_number)
+	stars.position = Vector2(0, 70)
+	stars.size = Vector2(BOX_SIZE.x, 24)
+	stars.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stars.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	stars.add_theme_font_size_override("font_size", 20)
+	stars.add_theme_color_override("font_color", Color("#ffd45b"))
+	stars.add_theme_color_override("font_shadow_color", Color("#1b1730"))
+	stars.add_theme_constant_override("shadow_offset_x", 2)
+	stars.add_theme_constant_override("shadow_offset_y", 2)
+	root.add_child(stars)
 
 	return root
 
@@ -162,7 +204,7 @@ func _build_player() -> void:
 func _update_selection(animated := true) -> void:
 	for i in boxes.size():
 		var face := boxes[i].get_node("Face") as ColorRect
-		face.color = Color(1.0, 0.98, 0.88) if i == selected_index else Color(0.94, 0.95, 0.92)
+		face.color = Color("#fff0a8") if i == selected_index else Color("#eee5c0")
 		boxes[i].scale = Vector2(1.06, 1.06) if i == selected_index else Vector2.ONE
 
 	var target_position := _player_position_for_index(selected_index)
@@ -224,3 +266,12 @@ func _is_key_pressed(event: InputEvent, keys: Array[int]) -> bool:
 	if key_event == null or not key_event.pressed or key_event.echo:
 		return false
 	return keys.has(key_event.keycode)
+
+# 保存済みスコアからステージの星を表示する。
+func _stage_star_text(stage_number: int) -> String:
+	var best := StageScoreStoreScript.best_for_stage("Stage%d" % stage_number)
+	var stars := int(best.get("stars", 0))
+	var text := ""
+	for i in 3:
+		text += "★" if i < stars else "☆"
+	return text
