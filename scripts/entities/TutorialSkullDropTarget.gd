@@ -54,6 +54,7 @@ func play_scripted_dash_to(destination: Vector2, duration: float, reform_after :
 	if memory_tag != null:
 		memory_tag.begin_breaking(last_record)
 	set_dash_direction_visual(Vector2.RIGHT)
+	set_replay_outline_active(true)
 	play_animation(&"dash")
 	set_active_action_record(last_record)
 	scripted_tween = create_tween()
@@ -61,6 +62,7 @@ func play_scripted_dash_to(destination: Vector2, duration: float, reform_after :
 	scripted_tween.set_ease(Tween.EASE_IN_OUT)
 	scripted_tween.tween_property(self, "global_position", destination, duration)
 	scripted_tween.tween_callback(func():
+		set_replay_outline_active(false)
 		clear_active_action_record(last_record)
 		velocity = Vector2.ZERO
 		play_animation(&"idle")
@@ -79,6 +81,7 @@ func play_drop_dash(hole_center_x: float, fall_y: float) -> void:
 	available = false
 	drop_started.emit()
 	set_dash_direction_visual(Vector2.RIGHT)
+	set_replay_outline_active(true)
 	play_animation(&"dash")
 	set_active_action_record(last_record)
 	var dash_end := Vector2(hole_center_x, global_position.y)
@@ -93,6 +96,7 @@ func play_drop_dash(hole_center_x: float, fall_y: float) -> void:
 	)
 	scripted_tween.tween_property(self, "global_position", Vector2(hole_center_x, fall_y), 0.92).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	scripted_tween.tween_callback(func():
+		set_replay_outline_active(false)
 		visible = false
 		drop_finished.emit()
 	)
@@ -134,3 +138,4 @@ func _kill_scripted_tween() -> void:
 	if scripted_tween != null and scripted_tween.is_valid():
 		scripted_tween.kill()
 	scripted_tween = null
+	set_replay_outline_active(false)
