@@ -369,7 +369,10 @@ func _play_final_shadow_bite() -> void:
 	)
 	tween.tween_property(player, "global_position", Vector2(PIT_CENTER_X, 700), 1.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_interval(0.24)
-	tween.tween_callback(func(): get_tree().change_scene_to_file(final_scene_path))
+	tween.tween_callback(func():
+		StageScoreStoreScript.mark_stage_completed("Stage0")
+		get_tree().change_scene_to_file(final_scene_path)
+	)
 
 # プレイヤー入力と物理をまとめて止める。
 func _set_player_control_enabled(enabled: bool) -> void:

@@ -30,6 +30,14 @@ const BUTTON_POSITIONS := [Vector2(640, 450), Vector2(640, 575)]
 const PLAYER_SCALE := Vector2(1.9, 1.9)
 const PLAYER_X_OFFSET := -280.0
 const BITE_LUNGE_DISTANCE := 86.0
+const BITE_HINT_FANG_SCALE := 0.58
+const BITE_HINT_KEY_SCALE := 1.42
+const BITE_HINT_TOUCH_KEY_SCALE := 0.36
+const BITE_HINT_TEXT_SCALE := 0.78
+const BITE_HINT_FANG_TOP_INSET := Vector2(40.0, 22.0)
+const BITE_HINT_FANG_BOTTOM_INSET := Vector2(40.0, 16.0)
+const BITE_HINT_KEY_OFFSET := Vector2(-42.0, -86.0)
+const BITE_HINT_TEXT_OFFSET := Vector2(38.0, -86.0)
 const SETTINGS_ROW_POSITIONS: Array[Vector2] = [Vector2(640, 360), Vector2(640, 435)]
 const SETTINGS_SLIDER_WIDTH := 300.0
 
@@ -118,6 +126,21 @@ func _build_background() -> void:
 			tile.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			tile.modulate = Color(0.88, 0.82, 1.0) if int((x + y) / 48.0) % 2 == 0 else Color(1.0, 0.92, 1.0)
 			floor.add_child(tile)
+
+	var menu_backplate := ColorRect.new()
+	menu_backplate.name = "MenuBackplate"
+	menu_backplate.color = Color(0.06, 0.035, 0.10, 0.58)
+	menu_backplate.position = Vector2(320, 385)
+	menu_backplate.size = Vector2(640, 245)
+	menu_backplate.z_index = -10
+	add_child(menu_backplate)
+
+	var menu_top := ColorRect.new()
+	menu_top.color = Color("#3f2558")
+	menu_top.position = Vector2(320, 385)
+	menu_top.size = Vector2(640, 8)
+	menu_top.z_index = -9
+	add_child(menu_top)
 
 # タイトル用テクスチャを読み込む。
 func _load_textures() -> void:
@@ -213,8 +236,8 @@ func _build_bite_hint() -> void:
 	key.name = "Key"
 	key.texture = bite_hint_key_texture
 	key.centered = true
-	key.position = Vector2(44, 0)
-	key.scale = Vector2(0.34, 0.34) if DeviceProfileScript.should_use_touch_bite_hint() else Vector2(1.35, 1.35)
+	key.position = BITE_HINT_KEY_OFFSET
+	key.scale = Vector2.ONE * (BITE_HINT_TOUCH_KEY_SCALE if DeviceProfileScript.should_use_touch_bite_hint() else BITE_HINT_KEY_SCALE)
 	key.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(key)
 
@@ -222,20 +245,24 @@ func _build_bite_hint() -> void:
 	text.name = "Text"
 	text.texture = bite_hint_text_texture
 	text.centered = true
-	text.position = Vector2(110, 1)
+	text.position = BITE_HINT_TEXT_OFFSET
+	text.scale = Vector2.ONE * BITE_HINT_TEXT_SCALE
 	text.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(text)
 
 	for config in [
-		{"name": "TopFang", "texture": bite_hint_top_fang_texture, "position": Vector2(-8, -18), "flip_v": false},
-		{"name": "BottomFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(-8, 20), "flip_v": true},
+		{"name": "TopLeftFang", "texture": bite_hint_top_fang_texture, "position": Vector2(-BUTTON_SIZE.x * 0.5 + BITE_HINT_FANG_TOP_INSET.x, -BUTTON_SIZE.y * 0.5 + BITE_HINT_FANG_TOP_INSET.y), "flip_h": false, "flip_v": false},
+		{"name": "TopRightFang", "texture": bite_hint_top_fang_texture, "position": Vector2(BUTTON_SIZE.x * 0.5 - BITE_HINT_FANG_TOP_INSET.x, -BUTTON_SIZE.y * 0.5 + BITE_HINT_FANG_TOP_INSET.y), "flip_h": true, "flip_v": false},
+		{"name": "BottomLeftFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(-BUTTON_SIZE.x * 0.5 + BITE_HINT_FANG_BOTTOM_INSET.x, BUTTON_SIZE.y * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.y), "flip_h": true, "flip_v": true},
+		{"name": "BottomRightFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(BUTTON_SIZE.x * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.x, BUTTON_SIZE.y * 0.5 - BITE_HINT_FANG_BOTTOM_INSET.y), "flip_h": false, "flip_v": true},
 	]:
 		var fang := Sprite2D.new()
 		fang.name = config.name
 		fang.texture = config.texture
 		fang.centered = true
 		fang.position = config.position
-		fang.scale = Vector2(0.75, 0.75)
+		fang.scale = Vector2.ONE * BITE_HINT_FANG_SCALE
+		fang.flip_h = config.flip_h
 		fang.flip_v = config.flip_v
 		fang.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		bite_hint.add_child(fang)
@@ -268,7 +295,7 @@ func _update_selection(animated := true) -> void:
 		tween.tween_property(player_sprite, "global_position", target_position, 0.12)
 	else:
 		player_sprite.global_position = target_position
-	bite_hint.global_position = menu_buttons[selected_index].global_position + Vector2(BUTTON_SIZE.x * 0.5 + 16, -4)
+	bite_hint.global_position = menu_buttons[selected_index].global_position
 	player_sprite.flip_h = false
 	player_sprite.play(&"walk")
 
