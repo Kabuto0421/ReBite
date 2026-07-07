@@ -1,10 +1,14 @@
 # 2026-06-23: BoarボスSEの実再生、重要音ダッキング、遅延再生を確認する。
 extends SceneTree
 
+const AudioSettings := preload("res://scripts/audio/AudioSettings.gd")
+
 func _init() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	AudioSettings.set_bgm_volume(1.0, false)
+	AudioSettings.set_se_volume(1.0, false)
 	AudioServer.set_bus_mute(0, true)
 	var scene: Node = load("res://stage/Stage10.tscn").instantiate()
 	root.add_child(scene)

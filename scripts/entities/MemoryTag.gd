@@ -2,6 +2,8 @@
 class_name MemoryTag
 extends Node2D
 
+const DeviceProfileScript := preload("res://scripts/platform/DeviceProfile.gd")
+
 signal lifecycle_changed(previous: int, current: int)
 signal memory_consumed(memory_id: int)
 signal memory_injected(direction: Vector2, memory_id: int)
@@ -13,6 +15,7 @@ const PLAQUE_TEXTURE_PATH := "res://assets/ui/memory_tag_plaque.png"
 const TOP_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_top_fang.png"
 const BOTTOM_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_bottom_fang.png"
 const KEY_TEXTURE_PATH := "res://assets/ui/bite_hint_key_k.png"
+const MOBILE_BITE_ICON_TEXTURE_PATH := "res://assets/ui/mobile/mobile_bite_button.png"
 const DASH_LEFT_TEXT_TEXTURE_PATH := "res://assets/ui/memory_text/memory_text_dash_left.png"
 const DASH_RIGHT_TEXT_TEXTURE_PATH := "res://assets/ui/memory_text/memory_text_dash_right.png"
 const JUMP_TEXT_TEXTURE_PATH := "res://assets/ui/memory_text/memory_text_hop_up.png"
@@ -262,9 +265,14 @@ func _setup_bite_hint_parts() -> void:
 		var config: Dictionary = HINT_PARTS[part_name]
 		var sprite := Sprite2D.new()
 		sprite.name = "BiteHint%s" % String(part_name).to_pascal_case()
-		sprite.texture = _load_bite_hint_texture(config.texture)
-		sprite.position = config.position * HINT_LAYOUT_TO_GAME_SCALE
-		sprite.scale = Vector2.ONE * float(config.scale)
+		if part_name == "key" and DeviceProfileScript.should_use_touch_bite_hint():
+			sprite.texture = _load_texture(MOBILE_BITE_ICON_TEXTURE_PATH)
+			sprite.position = Vector2(0, -31)
+			sprite.scale = Vector2.ONE * 0.18
+		else:
+			sprite.texture = _load_bite_hint_texture(config.texture)
+			sprite.position = config.position * HINT_LAYOUT_TO_GAME_SCALE
+			sprite.scale = Vector2.ONE * float(config.scale)
 		sprite.flip_h = config.flip_h
 		sprite.flip_v = config.flip_v
 		sprite.z_index = 2

@@ -1,5 +1,13 @@
-# 2026-06-14: HopMonsterを足場にして上段からSkullMonsterを処理するステージ。
+# 2026-06-29: BoarにSMASH記憶を運ばせる記憶搬送路ステージ。
 extends "res://scripts/stage/StageBase.gd"
+
+# 共通初期化後、留め具破壊でBoar巡回路をCへ切り替える。
+func _ready() -> void:
+	super._ready()
+	var latch := get_node_or_null("EditableGeometry/ActionBreakGroups/ActionBreakGroup_RouteLatch")
+	var boar := get_node_or_null("BoarMonster")
+	if latch != null and boar != null and boar.has_method("open_patrol_branch"):
+		latch.broken.connect(func(_enemy: Node, _record: Resource): boar.open_patrol_branch())
 
 func _build_world() -> void:
 	var background := ColorRect.new()

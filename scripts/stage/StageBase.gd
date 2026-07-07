@@ -14,8 +14,11 @@ const TileGroupBuilderScript := preload("res://scripts/stage/TileGroupBuilder.gd
 const EditableSpikesScript := preload("res://scripts/stage/EditableSpikes.gd")
 const StageSfxScript := preload("res://scripts/stage/StageSfx.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
+const MobileControlsScript := preload("res://scripts/ui/MobileControls.gd")
 
 @export var next_stage_path := "" # クリア後に遷移する次ステージ。
+@export var mobile_controls_force_visible := false # PC上でもスマホ操作UIを強制表示するか。
+@export var mobile_replay_button_visible := false # スマホ操作UIにリプレイボタンを出すか。
 
 @export_group("Stage Briefing")
 @export var stage_display_name := "" # HUDに表示するステージ名。空ならルートノード名を使う。
@@ -66,6 +69,7 @@ var enemy_tracker: Node # 敵一覧と撃破数を担当する部品。
 var goal_controller: Node # ゴール到達判定を担当する部品。
 var stage_sfx: Node # ステージ共通SEを担当する部品。
 var stage_bgm: Node # ステージ共通BGMを担当する部品。
+var mobile_controls: Node # スマホ向け操作UI。
 var camera_base_zoom := Vector2(1.35, 1.35) # 通常時のカメラズーム。
 var camera_cinematic := false # 通常追従ではないカメラ演出中かどうか。
 var spike_impact_freeze_active := false # 針ヒットで世界停止中かどうか。
@@ -81,6 +85,7 @@ func _ready() -> void:
 	_build_audio()
 	_build_stage_sfx()
 	_build_stage_bgm()
+	_build_mobile_controls()
 	_setup_entities()
 	_build_goal_controller()
 	_start_stage_briefing()
@@ -231,6 +236,14 @@ func _build_stage_bgm() -> void:
 	stage_bgm.setup(bgm_autoplay)
 	if stage_sfx != null and not stage_sfx.important_sound_played.is_connected(_on_important_sfx_played):
 		stage_sfx.important_sound_played.connect(_on_important_sfx_played)
+
+# スマホ向け操作UIを作成する。
+func _build_mobile_controls() -> void:
+	mobile_controls = MobileControlsScript.new()
+	mobile_controls.name = "MobileControls"
+	mobile_controls.force_visible = mobile_controls_force_visible
+	mobile_controls.show_replay_button = mobile_replay_button_visible
+	add_child(mobile_controls)
 
 # ゴール判定部品を作成する。
 func _build_goal_controller() -> void:

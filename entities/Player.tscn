@@ -1,13 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://player_memory_bite"]
+[gd_scene format=3 uid="uid://db8hokaod4pe4"]
 
-[ext_resource type="Script" path="res://scripts/entities/Player.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/core/StateMachine.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerGroundState.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerAirState.gd" id="4"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerBiteWindupState.gd" id="5"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerBiteLungeState.gd" id="6"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerBiteRecoverState.gd" id="7"]
-[ext_resource type="Script" path="res://scripts/states/player/PlayerDeadState.gd" id="8"]
+[ext_resource type="Script" uid="uid://dnhvboxxvygnn" path="res://scripts/entities/Player.gd" id="1"]
+[ext_resource type="Script" uid="uid://b3mif6ht7d0o2" path="res://scripts/core/StateMachine.gd" id="2"]
+[ext_resource type="Script" uid="uid://cr2oseh8pwcq6" path="res://scripts/states/player/PlayerGroundState.gd" id="3"]
+[ext_resource type="Script" uid="uid://xasp58ja662k" path="res://scripts/states/player/PlayerAirState.gd" id="4"]
+[ext_resource type="Script" uid="uid://3wiu7bfosb8s" path="res://scripts/states/player/PlayerBiteWindupState.gd" id="5"]
+[ext_resource type="Script" uid="uid://bk8mmxepq4t2f" path="res://scripts/states/player/PlayerBiteLungeState.gd" id="6"]
+[ext_resource type="Script" uid="uid://cu17hs7d51apm" path="res://scripts/states/player/PlayerBiteRecoverState.gd" id="7"]
+[ext_resource type="Script" uid="uid://dpmxdskqdejak" path="res://scripts/states/player/PlayerDeadState.gd" id="8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(24, 34)
@@ -18,66 +18,62 @@ size = Vector2(72, 54)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_drop_bite"]
 size = Vector2(104, 170)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" unique_id=1348403349]
 collision_layer = 2
 collision_mask = 9
 script = ExtResource("1")
 move_speed = 230.0
 jump_velocity = -430.0
 
-[node name="Shadow" type="Polygon2D" parent="."]
+[node name="Shadow" type="Polygon2D" parent="." unique_id=1647226447]
 z_index = -2
 position = Vector2(0, -1)
 color = Color(0.0156863, 0.0117647, 0.027451, 0.55)
 polygon = PackedVector2Array(-18, 0, -12, -4, 0, -6, 12, -4, 18, 0, 12, 4, 0, 6, -12, 4)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1096177318]
 position = Vector2(0, -18)
 shape = SubResource("RectangleShape2D_player")
 
-[node name="Sprite" type="AnimatedSprite2D" parent="."]
+[node name="Sprite" type="AnimatedSprite2D" parent="." unique_id=411981150]
 position = Vector2(0, -22)
 scale = Vector2(1.35, 1.35)
 
-[node name="BiteArea" type="Area2D" parent="."]
+[node name="BiteArea" type="Area2D" parent="." unique_id=1340748587]
 position = Vector2(42, -32)
 collision_layer = 0
 collision_mask = 4
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="BiteArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BiteArea" unique_id=1211786488]
 shape = SubResource("RectangleShape2D_bite")
 
-[node name="DropBiteArea" type="Area2D" parent="."]
+[node name="DropBiteArea" type="Area2D" parent="." unique_id=1786377194]
 position = Vector2(0, 30)
 collision_layer = 0
 collision_mask = 4
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="DropBiteArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DropBiteArea" unique_id=1990734935]
 shape = SubResource("RectangleShape2D_drop_bite")
 
-[node name="StateMachine" type="Node" parent="."]
+[node name="StateMachine" type="Node" parent="." unique_id=1277875474]
 script = ExtResource("2")
 
-[node name="Ground" type="Node" parent="StateMachine"]
+[node name="Ground" type="Node" parent="StateMachine" unique_id=1965189117]
 script = ExtResource("3")
 
-[node name="Air" type="Node" parent="StateMachine"]
+[node name="Air" type="Node" parent="StateMachine" unique_id=1985844972]
 script = ExtResource("4")
 
-[node name="BiteWindup" type="Node" parent="StateMachine"]
+[node name="BiteWindup" type="Node" parent="StateMachine" unique_id=148851274]
 script = ExtResource("5")
 windup_time = 0.11
 
-[node name="BiteLunge" type="Node" parent="StateMachine"]
+[node name="BiteLunge" type="Node" parent="StateMachine" unique_id=1418957452]
 script = ExtResource("6")
-out_time = 0.14
-bite_hold_time = 0.08
-return_time = 0.16
 
-[node name="BiteRecover" type="Node" parent="StateMachine"]
+[node name="BiteRecover" type="Node" parent="StateMachine" unique_id=250093517]
 script = ExtResource("7")
 recover_time = 0.18
 
-[node name="Dead" type="Node" parent="StateMachine"]
+[node name="Dead" type="Node" parent="StateMachine" unique_id=428111765]
 script = ExtResource("8")
-death_time = 0.95

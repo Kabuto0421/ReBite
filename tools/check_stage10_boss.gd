@@ -122,7 +122,11 @@ func _run() -> void:
 	assert(AudioServer.get_bus_effect(boss_music_bus_index, 0) is AudioEffectEQ10)
 	assert(scene.stage_bgm.bus_name == &"BossMusic")
 	var boss_equalizer := AudioServer.get_bus_effect(boss_music_bus_index, 0) as AudioEffectEQ10
-	assert(boss_equalizer.get_band_gain_db(6) == 7.0)
+	assert(boss_equalizer.get_band_gain_db(0) == 5.0)
+	assert(boss_equalizer.get_band_gain_db(1) == 5.0)
+	assert(boss_equalizer.get_band_gain_db(2) == 4.0)
+	assert(boss_equalizer.get_band_gain_db(3) == 2.0)
+	assert(boss_equalizer.get_band_gain_db(4) == 0.5)
 	assert(battle.current_phase() == &"TeachSmash")
 	assert(scene.camera.zoom == scene.arena_camera_zoom)
 	assert(scene.camera.global_position == scene.arena_camera_position)

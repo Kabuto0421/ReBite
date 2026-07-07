@@ -2,6 +2,8 @@
 class_name BossBattleSfx
 extends Node
 
+const AudioSettings := preload("res://scripts/audio/AudioSettings.gd")
+
 signal important_sound_played(cue_id: StringName) # BGMを下げるべき重要SEの再生を通知する。
 signal cue_requested(cue_id: StringName, delay: float) # テストや字幕連携用に意味Cueの要求を通知する。
 
@@ -45,7 +47,7 @@ func _play_cue_now(cue_id: StringName) -> void:
 	var player := AudioStreamPlayer.new()
 	player.process_mode = Node.PROCESS_MODE_ALWAYS
 	player.stream = cue_streams[cue_id]
-	player.volume_db = volume_db + float(cue_volume_offsets.get(cue_id, 0.0))
+	player.volume_db = AudioSettings.apply_se_volume_db(volume_db + float(cue_volume_offsets.get(cue_id, 0.0)))
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()

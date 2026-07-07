@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Memory Bite Stage 1"
-run/main_scene="res://stage/Stage1.tscn"
+run/main_scene="res://stage/TitleScreen.tscn"
 config/features=PackedStringArray("4.6")
 
 [display]

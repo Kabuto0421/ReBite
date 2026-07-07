@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dv82caihrxq7b"]
 
 [ext_resource type="Script" uid="uid://cq6pgciv38hrp" path="res://scripts/stage/Stage6.gd" id="1"]
-[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://db8hokaod4pe4" path="res://entities/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://entities/HopMonster.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://entities/SkullMonster.tscn" id="4"]
 [ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="5"]
@@ -204,6 +204,21 @@ sway_speed = 0.4
 vertical_sway = 0.5
 
 [node name="ReBiteGateRig" parent="." unique_id=756866404 instance=ExtResource("10_ynqyt")]
+position = Vector2(645, 106)
+scale = Vector2(2, 2)
+tick_rate = 10.0
+
+[node name="ReBiteGateRig2" parent="." unique_id=939806216 instance=ExtResource("10_ynqyt")]
+position = Vector2(1009, 106)
+scale = Vector2(2, 2)
+tick_rate = 10.0
+
+[node name="ReBiteGateRig4" parent="." unique_id=2051860760 instance=ExtResource("10_ynqyt")]
+position = Vector2(1326, 106)
+scale = Vector2(2, 2)
+tick_rate = 10.0
+
+[node name="ReBiteGateRig3" parent="." unique_id=305125774 instance=ExtResource("10_ynqyt")]
 position = Vector2(645, 106)
 scale = Vector2(2, 2)
 tick_rate = 10.0

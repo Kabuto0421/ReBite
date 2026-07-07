@@ -108,6 +108,8 @@ func _start_stage_briefing() -> void:
 	boss_sfx.setup(boss, nodes[1], nodes[2], nodes[6])
 	boss_sfx.important_sound_played.connect(_on_important_sfx_played)
 	boss_music_bus = nodes[8]
+	boss_music_bus.setup()
+	stage_bgm.set_output_bus(boss_music_bus.bus_name)
 	boss_camera_feedback = nodes[9]
 	boss_camera_feedback.setup(self, boss)
 	boss_impact_feedback = nodes[10]
@@ -127,8 +129,6 @@ func _on_boss_progress_changed(damage: int, max_damage: int) -> void:
 
 # イントロ終了時に常駐HUDと最初の攻略フェーズを開始する。
 func _on_boss_intro_finished() -> void:
-	boss_music_bus.setup()
-	stage_bgm.set_output_bus(boss_music_bus.bus_name)
 	stage_bgm.play_track(boss_battle_bgm_path, true, boss_battle_bgm_volume_db)
 	stage_hud.show_persistent_hud(0.18)
 	boss_battle.finish_intro()
