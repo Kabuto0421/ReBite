@@ -16,6 +16,7 @@ const PlayerBiteWindupState := preload("res://scripts/states/player/PlayerBiteWi
 const PlayerBiteLungeState := preload("res://scripts/states/player/PlayerBiteLungeState.gd")
 const PlayerBiteRecoverState := preload("res://scripts/states/player/PlayerBiteRecoverState.gd")
 const PlayerDeadState := preload("res://scripts/states/player/PlayerDeadState.gd")
+const REPLAY_OUTLINE_SHADER := preload("res://assets/shaders/skull_pixel_outline.gdshader")
 
 @export var move_speed := 210.0
 @export var jump_velocity := -410.0
@@ -41,6 +42,7 @@ var contact_immunity_targets: Dictionary = {} # 噛み成功対象ごとの接�
 var coyote_timer := 0.0 # 現在残っているコヨーテタイム。
 var jump_buffer_timer := 0.0 # 現在保存しているジャンプ入力時間。
 var movement_feedback_tween: Tween # 離陸・着地変形を管理するTween。
+var default_replay_material: Material # 再演輪郭解除時に戻すSprite Material。
 
 @onready var bite_area: Area2D = $BiteArea
 @onready var drop_bite_area: Area2D = $DropBiteArea
@@ -195,6 +197,23 @@ func die() -> void:
 
 func set_bite_invulnerable(active: bool) -> void:
 	bite_invulnerable = active
+
+# プレイヤーが記憶再演させられている間の紫輪郭を切り替える。
+func set_replay_outline_active(active: bool) -> void:
+	if sprite == null:
+		return
+	if active:
+		if default_replay_material == null:
+			default_replay_material = sprite.material
+		var material := ShaderMaterial.new()
+		material.shader = REPLAY_OUTLINE_SHADER
+		material.set_shader_parameter("outline_color", Color("#c86bff"))
+		material.set_shader_parameter("outline_size", 1.65)
+		material.set_shader_parameter("tint_color", Color.WHITE)
+		sprite.material = material
+	else:
+		sprite.material = default_replay_material
+		default_replay_material = null
 
 # 対象と離れた時点、または安全時間上限で接触保護を解除する。
 func _update_contact_immunity(delta: float) -> void:

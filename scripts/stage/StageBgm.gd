@@ -2,6 +2,8 @@
 class_name StageBgm
 extends Node
 
+const AudioSettings := preload("res://scripts/audio/AudioSettings.gd")
+
 @export var enabled := true # BGMを再生するかどうか。
 @export_file("*.wav", "*.ogg") var bgm_path := "res://assets/bgm/memory_bite_loop_02.wav" # 再生するBGM。
 @export var volume_db := -15.0 # BGMの音量。
@@ -13,6 +15,7 @@ extends Node
 var player: AudioStreamPlayer # 実際にBGMを鳴らすプレイヤー。
 var duck_tween: Tween # BGMダッキング用のTween。
 var active_volume_db := -15.0 # 現在再生中の曲が戻る基準音量。
+var active_base_volume_db := -15.0 # ユーザー音量を反映する前の基準音量。
 
 # BGMプレイヤーを作り、指定されている場合は既定曲を再生する。
 func setup(autoplay: bool = true) -> void:
@@ -34,7 +37,8 @@ func play_track(path: String, should_loop: bool = true, track_volume_db: float =
 		return
 	_set_stream_loop(stream, should_loop)
 	player.stream = stream
-	active_volume_db = volume_db if track_volume_db >= 900.0 else track_volume_db
+	active_base_volume_db = volume_db if track_volume_db >= 900.0 else track_volume_db
+	active_volume_db = AudioSettings.apply_bgm_volume_db(active_base_volume_db)
 	player.volume_db = active_volume_db
 	player.play()
 
@@ -48,6 +52,12 @@ func set_output_bus(next_bus_name: StringName) -> void:
 	bus_name = next_bus_name
 	if player != null:
 		player.bus = bus_name
+
+# 現在再生中の曲へユーザーBGM音量を反映する。
+func refresh_volume_from_settings() -> void:
+	active_volume_db = AudioSettings.apply_bgm_volume_db(active_base_volume_db)
+	if player != null:
+		player.volume_db = active_volume_db
 
 # AudioStreamPlayerを必要な時に一度だけ生成する。
 func _ensure_player() -> void:

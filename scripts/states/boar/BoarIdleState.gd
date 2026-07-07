@@ -20,8 +20,13 @@ func physics_update(delta: float) -> void:
 	owner_node.apply_gravity(delta)
 	owner_node.move_and_slide()
 	if timer <= 0.0:
-		if owner_node.is_player_in_smash_range():
-			transition_requested.emit(&"Telegraph", owner_node.build_smash_record_toward_player())
+		if owner_node.is_patrol_carrier():
+			if owner_node.can_start_patrol_smash():
+				transition_requested.emit(&"Telegraph", owner_node.build_autonomous_smash_record())
+			else:
+				transition_requested.emit(&"Recover", null)
+		elif owner_node.is_player_in_smash_range():
+			transition_requested.emit(&"Telegraph", owner_node.build_autonomous_smash_record())
 		else:
 			owner_node.face_player()
 			transition_requested.emit(&"Recover", null)

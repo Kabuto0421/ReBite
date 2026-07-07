@@ -3,15 +3,17 @@ extends Node2D
 
 const SpriteFrameBuilder := preload("res://scripts/core/SpriteFrameBuilder.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
-const STAGE_COUNT := 8 # 選択可能なステージ数。
 const BOX_SIZE := Vector2(142, 118) # ステージ箱の表示サイズ。
 const BOX_GAP := 35.0 # 箱同士の間隔。
-const BOX_Y := 330.0 # 箱の上端Y座標。
+const BOX_Y := 220.0 # 箱の上端Y座標。
+const BOX_ROW_GAP := 150.0 # 箱の段同士の間隔。
+const BOX_COLUMNS := 5 # 1段に並べる箱数。
 const PLAYER_Y_OFFSET := 66.0 # プレイヤーが箱から離れる距離。
 const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤーの表示倍率。
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
 
 var stage_paths: Array[String] = [ # 各箱が開くステージScene。
+	"res://stage/Stage0.tscn",
 	"res://stage/Stage1.tscn",
 	"res://stage/Stage2.tscn",
 	"res://stage/Stage3.tscn",
@@ -20,6 +22,8 @@ var stage_paths: Array[String] = [ # 各箱が開くステージScene。
 	"res://stage/Stage6.tscn",
 	"res://stage/Stage7.tscn",
 	"res://stage/Stage8.tscn",
+	"res://stage/Stage9.tscn",
+	"res://stage/Stage10.tscn",
 ]
 
 var selected_index := 0 # 現在選択中のステージ番号。
@@ -46,6 +50,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("move_right"):
 		selected_index = posmod(selected_index + 1, boxes.size())
 		_update_selection()
+	elif _is_key_pressed(event, [KEY_UP, KEY_W]):
+		selected_index = posmod(selected_index - BOX_COLUMNS, boxes.size())
+		_update_selection()
+	elif _is_key_pressed(event, [KEY_DOWN, KEY_S]):
+		selected_index = posmod(selected_index + BOX_COLUMNS, boxes.size())
+		_update_selection()
 	elif event.is_action_pressed("bite"):
 		_bite_selected_stage()
 
@@ -71,13 +81,15 @@ func _build_bgm() -> void:
 	add_child(stage_bgm)
 	stage_bgm.setup()
 
-# 5つのステージ箱を横に並べる。
+# ステージ箱を5列グリッドで並べる。
 func _build_stage_boxes() -> void:
-	var total_width := STAGE_COUNT * BOX_SIZE.x + (STAGE_COUNT - 1) * BOX_GAP
+	var total_width := BOX_COLUMNS * BOX_SIZE.x + (BOX_COLUMNS - 1) * BOX_GAP
 	var start_x := (1280.0 - total_width) * 0.5
-	for i in STAGE_COUNT:
-		var box := _create_stage_box(i + 1)
-		box.position = Vector2(start_x + i * (BOX_SIZE.x + BOX_GAP), BOX_Y)
+	for i in stage_paths.size():
+		var box := _create_stage_box(i)
+		var column := i % BOX_COLUMNS
+		var row := int(i / BOX_COLUMNS)
+		box.position = Vector2(start_x + column * (BOX_SIZE.x + BOX_GAP), BOX_Y + row * BOX_ROW_GAP)
 		add_child(box)
 		boxes.append(box)
 
@@ -205,3 +217,10 @@ func _break_stage_box(box: Node2D) -> void:
 		tween.tween_property(shard, "modulate:a", 0.0, 0.38)
 		tween.set_parallel(false)
 		tween.tween_callback(shard.queue_free)
+
+# 指定キー群の押下を返す。
+func _is_key_pressed(event: InputEvent, keys: Array[int]) -> bool:
+	var key_event := event as InputEventKey
+	if key_event == null or not key_event.pressed or key_event.echo:
+		return false
+	return keys.has(key_event.keycode)

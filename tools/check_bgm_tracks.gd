@@ -1,6 +1,7 @@
 # 2026-06-24: 復元した通常曲とStage10専用曲の形式、切替、ループ設定を確認する。
 extends SceneTree
 
+const AudioSettings := preload("res://scripts/audio/AudioSettings.gd")
 const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
 const REGULAR_PATH := "res://assets/bgm/memory_bite_loop_02.wav"
 const INTRO_PATH := "res://assets/bgm/rebite_boar_intro_fanfare.ogg"
@@ -10,6 +11,8 @@ func _init() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	AudioSettings.set_bgm_volume(1.0, false)
+	AudioSettings.set_se_volume(1.0, false)
 	assert(load(REGULAR_PATH) is AudioStreamWAV)
 	assert(FileAccess.get_file_as_bytes(REGULAR_PATH).size() < 2 * 1024 * 1024)
 	for path in [INTRO_PATH, BOSS_PATH]:
@@ -32,7 +35,7 @@ func _run() -> void:
 	assert(scene.stage_bgm.player != null)
 	assert(scene.stage_bgm.player.stream is AudioStreamOggVorbis)
 	assert(not scene.stage_bgm.player.stream.loop)
-	assert(scene.stage_bgm.player.bus == &"Master")
+	assert(scene.stage_bgm.player.bus == &"BossMusic")
 	assert(absf(scene.stage_bgm.player.stream.get_length() - 8.0) < 0.02)
 	scene.boss_intro._finish()
 	await process_frame

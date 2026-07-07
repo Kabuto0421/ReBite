@@ -32,6 +32,8 @@ func physics_update(delta: float) -> void:
 	owner_node.move_and_slide()
 	if timer <= 0.0:
 		owner_node.commit_smash_record(record)
+		if record.source == &"NATURAL" and owner_node.has_method("on_autonomous_smash_finished"):
+			owner_node.on_autonomous_smash_finished()
 		transition_requested.emit(&"Recover", null)
 
 # 攻撃区間に合わせてプレイヤー攻撃判定と地形行動記録を切り替える。

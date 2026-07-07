@@ -2,6 +2,8 @@
 class_name StageSfx
 extends Node
 
+const AudioSettings := preload("res://scripts/audio/AudioSettings.gd")
+
 signal important_sound_played(sound_name: StringName)
 
 @export var volume_db := -5.0 # 効果音全体の音量。
@@ -56,7 +58,7 @@ func play(sound_name: StringName) -> void:
 		return
 	var player := AudioStreamPlayer.new()
 	player.stream = streams[sound_name]
-	player.volume_db = volume_db + float(volume_offsets.get(sound_name, 0.0))
+	player.volume_db = AudioSettings.apply_se_volume_db(volume_db + float(volume_offsets.get(sound_name, 0.0)))
 	add_child(player)
 	player.finished.connect(player.queue_free)
 	player.play()
