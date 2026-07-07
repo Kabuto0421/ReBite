@@ -34,6 +34,30 @@ static func record_result(stage_id: String, result: Dictionary) -> Dictionary:
 		save_all(data)
 	return data.get(stage_id, result)
 
+# スコアを持たないチュートリアルなどの完了だけを記録する。
+static func mark_stage_completed(stage_id: String) -> Dictionary:
+	var data := load_all()
+	var previous: Dictionary = data.get(stage_id, {})
+	previous["stage_id"] = stage_id
+	previous["completed"] = true
+	previous["updated_at_unix"] = int(Time.get_unix_time_from_system())
+	data[stage_id] = previous
+	save_all(data)
+	return previous
+
+# 指定ステージをクリア済みとして扱うか返す。
+static func is_stage_completed(stage_id: String) -> bool:
+	var result := best_for_stage(stage_id)
+	return bool(result.get("completed", false)) or int(result.get("score", 0)) > 0
+
+# 指定ステージがステージセレクトで選択可能か返す。
+static func is_stage_unlocked(stage_id: String) -> bool:
+	var stage_ids := current_stage_ids()
+	var index := stage_ids.find(stage_id)
+	if index <= 0:
+		return index == 0
+	return is_stage_completed(stage_ids[index - 1])
+
 # ランキング用に全ステージのベストスコア合計を返す。
 static func total_best_score(stage_ids: Variant = null) -> int:
 	var total := 0
@@ -49,7 +73,7 @@ static func completed_stage_count(stage_ids: Variant = null) -> int:
 	var data := load_all()
 	for stage_id in _resolved_stage_ids(stage_ids):
 		var result: Dictionary = data.get(String(stage_id), {})
-		if int(result.get("score", 0)) > 0:
+		if bool(result.get("completed", false)) or int(result.get("score", 0)) > 0:
 			count += 1
 	return count
 
@@ -102,6 +126,7 @@ static func _normalized_result(stage_id: String, result: Dictionary) -> Dictiona
 	normalized["stars"] = int(normalized.get("stars", 0))
 	normalized["elapsed"] = float(normalized.get("elapsed", 0.0))
 	normalized["deaths"] = int(normalized.get("deaths", 0))
+	normalized["completed"] = true
 	normalized["updated_at_unix"] = int(Time.get_unix_time_from_system())
 	return normalized
 

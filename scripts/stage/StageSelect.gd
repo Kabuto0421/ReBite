@@ -35,13 +35,16 @@ var player_sprite: AnimatedSprite2D # 箱の前にいるプレイヤー。
 var stage_bgm: Node # 選択画面BGMを担当する部品。
 var moving := false # 噛み演出中かどうか。
 var bite_hint: Node2D # 選択箱をKで噛むことを示す表示。
+var unlocked_indices: Array[int] = [] # 選択可能なステージ番号。
 
 # 画面要素を生成する。
 func _ready() -> void:
+	_refresh_unlocked_indices()
 	_build_background()
 	_build_bgm()
 	_build_stage_boxes()
 	_build_player()
+	selected_index = unlocked_indices[0] if not unlocked_indices.is_empty() else 0
 	_update_selection(false)
 
 # 左右移動と噛み入力を受け付ける。
@@ -49,17 +52,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if moving:
 		return
 	if event.is_action_pressed("move_left"):
-		selected_index = posmod(selected_index - 1, boxes.size())
-		_update_selection()
+		_move_selection_linear(-1)
 	elif event.is_action_pressed("move_right"):
-		selected_index = posmod(selected_index + 1, boxes.size())
-		_update_selection()
+		_move_selection_linear(1)
 	elif _is_key_pressed(event, [KEY_UP, KEY_W]):
-		selected_index = posmod(selected_index - BOX_COLUMNS, boxes.size())
-		_update_selection()
+		_move_selection_grid(-BOX_COLUMNS)
 	elif _is_key_pressed(event, [KEY_DOWN, KEY_S]):
-		selected_index = posmod(selected_index + BOX_COLUMNS, boxes.size())
-		_update_selection()
+		_move_selection_grid(BOX_COLUMNS)
 	elif event.is_action_pressed("bite"):
 		_bite_selected_stage()
 
@@ -237,7 +236,33 @@ func _create_stage_box(stage_number: int) -> Node2D:
 	pedestal.size = Vector2(BOX_SIZE.x - 32, 14)
 	root.add_child(pedestal)
 
+	var lock_label := Label.new()
+	lock_label.name = "LockLabel"
+	lock_label.text = "LOCK"
+	lock_label.position = Vector2(0, 38)
+	lock_label.size = Vector2(BOX_SIZE.x, 34)
+	lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lock_label.add_theme_font_size_override("font_size", 24)
+	lock_label.add_theme_color_override("font_color", Color("#d5d9e2"))
+	lock_label.add_theme_color_override("font_shadow_color", Color("#10101a"))
+	lock_label.add_theme_constant_override("shadow_offset_x", 2)
+	lock_label.add_theme_constant_override("shadow_offset_y", 2)
+	lock_label.visible = false
+	root.add_child(lock_label)
+
 	return root
+
+# 保存済み進行度から選択可能ステージ一覧を作る。
+func _refresh_unlocked_indices() -> void:
+	unlocked_indices.clear()
+	for i in stage_paths.size():
+		if _is_stage_unlocked(i):
+			unlocked_indices.append(i)
+
+# 指定ステージ番号が解放済みか返す。
+func _is_stage_unlocked(index: int) -> bool:
+	return StageScoreStoreScript.is_stage_unlocked(_stage_id_for_index(index))
 
 # Kで選ぶことを選択箱の近くに表示する。
 func _build_bite_hint() -> void:
@@ -290,8 +315,14 @@ func _build_player() -> void:
 func _update_selection(animated := true) -> void:
 	for i in boxes.size():
 		var face := boxes[i].get_node("Face") as ColorRect
-		face.color = Color("#fff0a8") if i == selected_index else Color("#eee5c0")
-		boxes[i].scale = Vector2(1.06, 1.06) if i == selected_index else Vector2.ONE
+		var locked := not _is_stage_unlocked(i)
+		var selected := i == selected_index and not locked
+		face.color = Color("#fff0a8") if selected else (Color("#464452") if locked else Color("#eee5c0"))
+		boxes[i].modulate = Color(0.52, 0.52, 0.60, 0.82) if locked else Color.WHITE
+		boxes[i].scale = Vector2(1.06, 1.06) if selected else Vector2.ONE
+		var lock_label := boxes[i].get_node_or_null("LockLabel") as Label
+		if lock_label != null:
+			lock_label.visible = locked
 
 	var target_position := _player_position_for_index(selected_index)
 	if animated:
@@ -304,6 +335,7 @@ func _update_selection(animated := true) -> void:
 	player_sprite.play(&"walk")
 	if bite_hint != null:
 		bite_hint.global_position = boxes[selected_index].global_position + Vector2(BOX_SIZE.x * 0.5, -24)
+		bite_hint.visible = _is_stage_unlocked(selected_index)
 
 # 指定箱の前に立つプレイヤー位置を返す。
 func _player_position_for_index(index: int) -> Vector2:
@@ -312,6 +344,8 @@ func _player_position_for_index(index: int) -> Vector2:
 
 # 選択中の箱に噛みついてステージへ移動する。
 func _bite_selected_stage() -> void:
+	if not _is_stage_unlocked(selected_index):
+		return
 	moving = true
 	if bite_hint != null:
 		bite_hint.visible = false
@@ -327,6 +361,27 @@ func _bite_selected_stage() -> void:
 	tween.tween_interval(0.18)
 	tween.tween_property(player_sprite, "global_position", start_position, 0.10)
 	tween.tween_callback(func(): get_tree().change_scene_to_file(stage_paths[selected_index]))
+
+# 左右入力では解放済みステージだけを巡回する。
+func _move_selection_linear(delta: int) -> void:
+	if unlocked_indices.is_empty():
+		return
+	var current := unlocked_indices.find(selected_index)
+	if current < 0:
+		current = 0
+	current = posmod(current + delta, unlocked_indices.size())
+	selected_index = unlocked_indices[current]
+	_update_selection()
+
+# 上下入力では同じ列の解放済みステージへだけ移動する。
+func _move_selection_grid(delta: int) -> void:
+	var target := selected_index + delta
+	if target < 0 or target >= boxes.size():
+		return
+	if not _is_stage_unlocked(target):
+		return
+	selected_index = target
+	_update_selection()
 
 # 噛まれた箱を砕いて消す。
 func _break_stage_box(box: Node2D) -> void:
@@ -365,3 +420,7 @@ func _stage_star_text(stage_number: int) -> String:
 	for i in 3:
 		text += "★" if i < stars else "☆"
 	return text
+
+# stage_pathsから進行度保存用IDを作る。
+func _stage_id_for_index(index: int) -> String:
+	return stage_paths[index].get_file().get_basename()
