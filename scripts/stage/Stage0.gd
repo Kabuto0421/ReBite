@@ -350,6 +350,7 @@ func _play_final_shadow_bite() -> void:
 	tween.tween_callback(func():
 		play_sfx(&"bite_hit")
 		shadow_guide.visible = false
+		player.set_replay_outline_active(true)
 		player.play_animation(&"walk")
 	)
 	tween.tween_property(self, "final_camera_zoom", Vector2(1.92, 1.92), 0.10)
@@ -357,6 +358,7 @@ func _play_final_shadow_bite() -> void:
 	tween.parallel().tween_property(self, "final_camera_position", Vector2(PIT_CENTER_X, player.global_position.y - 42), 0.56)
 	tween.tween_callback(func():
 		player.pause_animation()
+		player.set_replay_outline_active(false)
 		_show_reaction_text("!!!!!!!", player.global_position + Vector2(0, -122), 30, Color(1.0, 0.86, 0.24), 0.76)
 		shake_camera(10.0, 0.12)
 	)
