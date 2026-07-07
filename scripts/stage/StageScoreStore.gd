@@ -20,6 +20,21 @@ static func current_stage_ids() -> PackedStringArray:
 		"Stage10",
 	])
 
+# ランキングとCLEAR表示の対象ステージID一覧を返す。
+static func ranking_stage_ids() -> PackedStringArray:
+	return PackedStringArray([
+		"Stage1",
+		"Stage2",
+		"Stage3",
+		"Stage4",
+		"Stage5",
+		"Stage6",
+		"Stage7",
+		"Stage8",
+		"Stage9",
+		"Stage10",
+	])
+
 # 指定ステージのベストスコア情報を返す。
 static func best_for_stage(stage_id: String) -> Dictionary:
 	var data := load_all()
@@ -56,7 +71,10 @@ static func is_stage_unlocked(stage_id: String) -> bool:
 	var index := stage_ids.find(stage_id)
 	if index <= 0:
 		return index == 0
-	return is_stage_completed(stage_ids[index - 1])
+	for previous_index in index:
+		if not is_stage_completed(stage_ids[previous_index]):
+			return false
+	return true
 
 # ランキング用に全ステージのベストスコア合計を返す。
 static func total_best_score(stage_ids: Variant = null) -> int:
@@ -133,9 +151,9 @@ static func _normalized_result(stage_id: String, result: Dictionary) -> Dictiona
 # 明示ステージ一覧がない場合は現在の体験版対象ステージを使う。
 static func _resolved_stage_ids(stage_ids: Variant) -> PackedStringArray:
 	if stage_ids == null:
-		return current_stage_ids()
+		return ranking_stage_ids()
 	if stage_ids is PackedStringArray:
 		return stage_ids
 	if stage_ids is Array:
 		return PackedStringArray(stage_ids)
-	return current_stage_ids()
+	return ranking_stage_ids()

@@ -6,8 +6,9 @@ const StageBgmScript := preload("res://scripts/stage/StageBgm.gd")
 const StageScoreStoreScript := preload("res://scripts/stage/StageScoreStore.gd")
 const BOX_SIZE := Vector2(132, 104) # ステージ箱の表示サイズ。
 const BOX_GAP := 44.0 # 箱同士の間隔。
-const BOX_Y := 148.0 # 箱の上端Y座標。
-const BOX_ROW_GAP := 154.0 # 箱の段同士の間隔。
+const BOX_Y := 136.0 # Stage0箱の上端Y座標。
+const STAGE_GRID_Y := 308.0 # Stage1以降の箱を並べ始めるY座標。
+const BOX_ROW_GAP := 144.0 # 箱の段同士の間隔。
 const BOX_COLUMNS := 5 # 1段に並べる箱数。
 const PLAYER_Y_OFFSET := 62.0 # プレイヤーが箱から離れる距離。
 const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤーの表示倍率。
@@ -56,9 +57,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("move_right"):
 		_move_selection_linear(1)
 	elif _is_key_pressed(event, [KEY_UP, KEY_W]):
-		_move_selection_grid(-BOX_COLUMNS)
+		_move_selection_vertical(-1)
 	elif _is_key_pressed(event, [KEY_DOWN, KEY_S]):
-		_move_selection_grid(BOX_COLUMNS)
+		_move_selection_vertical(1)
 	elif event.is_action_pressed("bite"):
 		_bite_selected_stage()
 
@@ -124,31 +125,40 @@ func _build_stage_boxes() -> void:
 	_build_route_tracks(start_x)
 	for i in stage_paths.size():
 		var box := _create_stage_box(i)
-		var column := i % BOX_COLUMNS
-		var row := int(i / BOX_COLUMNS)
-		box.position = Vector2(start_x + column * (BOX_SIZE.x + BOX_GAP), BOX_Y + row * BOX_ROW_GAP)
+		box.position = _stage_box_position(i, start_x)
+		box.visible = _is_stage_unlocked(i)
 		add_child(box)
 		boxes.append(box)
 	_build_bite_hint()
 
 # 箱の下をつなぐレールと足場を描く。
 func _build_route_tracks(start_x: float) -> void:
-	var rows := int(ceil(float(stage_paths.size()) / float(BOX_COLUMNS)))
+	for index in unlocked_indices:
+		var position := _stage_box_position(index, start_x)
+		var center_x := position.x + BOX_SIZE.x * 0.5
+		var y := position.y + BOX_SIZE.y + 50.0
+		_add_track_bar(Vector2(center_x - 46.0, y - 8.0), Vector2(92.0, 10.0), Color("#d5a53c"))
+		_add_track_bar(Vector2(center_x - 36.0, y - 2.0), Vector2(72.0, 5.0), Color("#fff0a8"))
+
+	var rows := int(ceil(max(0.0, float(unlocked_indices.size() - 1)) / float(BOX_COLUMNS)))
 	for row in rows:
-		var count := mini(BOX_COLUMNS, stage_paths.size() - row * BOX_COLUMNS)
-		var y := BOX_Y + row * BOX_ROW_GAP + BOX_SIZE.y + 50.0
+		var count := mini(BOX_COLUMNS, unlocked_indices.size() - 1 - row * BOX_COLUMNS)
+		if count <= 0:
+			continue
+		var y := STAGE_GRID_Y + row * BOX_ROW_GAP + BOX_SIZE.y + 50.0
 		var first_center := start_x + BOX_SIZE.x * 0.5
 		var last_center := start_x + (count - 1) * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5
 		_add_track_bar(Vector2(first_center - 42.0, y), Vector2(last_center - first_center + 84.0, 16.0), Color("#3a254e"))
 		_add_track_bar(Vector2(first_center - 42.0, y + 16.0), Vector2(last_center - first_center + 84.0, 8.0), Color("#17101f"))
-		for column in count:
-			var center_x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5
-			_add_track_bar(Vector2(center_x - 46.0, y - 8.0), Vector2(92.0, 10.0), Color("#d5a53c"))
-			_add_track_bar(Vector2(center_x - 36.0, y - 2.0), Vector2(72.0, 5.0), Color("#fff0a8"))
-	if rows > 1:
-		for column in BOX_COLUMNS:
-			var x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5 - 8.0
-			_add_track_bar(Vector2(x, BOX_Y + BOX_SIZE.y + 58.0), Vector2(16.0, (rows - 1) * BOX_ROW_GAP), Color("#241831"))
+
+# ステージ番号から箱の配置を返す。
+func _stage_box_position(index: int, start_x: float) -> Vector2:
+	if index == 0:
+		return Vector2((ROOM_WIDTH - BOX_SIZE.x) * 0.5, BOX_Y)
+	var adjusted := index - 1
+	var column := adjusted % BOX_COLUMNS
+	var row := int(adjusted / BOX_COLUMNS)
+	return Vector2(start_x + column * (BOX_SIZE.x + BOX_GAP), STAGE_GRID_Y + row * BOX_ROW_GAP)
 
 # レール用の矩形を追加する。
 func _add_track_bar(position: Vector2, size: Vector2, color: Color) -> void:
@@ -236,21 +246,6 @@ func _create_stage_box(stage_number: int) -> Node2D:
 	pedestal.size = Vector2(BOX_SIZE.x - 32, 14)
 	root.add_child(pedestal)
 
-	var lock_label := Label.new()
-	lock_label.name = "LockLabel"
-	lock_label.text = "LOCK"
-	lock_label.position = Vector2(0, 38)
-	lock_label.size = Vector2(BOX_SIZE.x, 34)
-	lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lock_label.add_theme_font_size_override("font_size", 24)
-	lock_label.add_theme_color_override("font_color", Color("#d5d9e2"))
-	lock_label.add_theme_color_override("font_shadow_color", Color("#10101a"))
-	lock_label.add_theme_constant_override("shadow_offset_x", 2)
-	lock_label.add_theme_constant_override("shadow_offset_y", 2)
-	lock_label.visible = false
-	root.add_child(lock_label)
-
 	return root
 
 # 保存済み進行度から選択可能ステージ一覧を作る。
@@ -274,19 +269,19 @@ func _build_bite_hint() -> void:
 	var key := Label.new()
 	key.name = "Key"
 	key.text = "K"
-	key.position = Vector2(-20, -16)
-	key.size = Vector2(40, 32)
+	key.position = Vector2(-18, -18)
+	key.size = Vector2(48, 36)
 	key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	key.add_theme_font_size_override("font_size", 22)
-	key.add_theme_color_override("font_color", Color("#1b1730"))
-	key.add_theme_color_override("font_shadow_color", Color("#fff0a8"))
-	key.add_theme_constant_override("shadow_offset_x", 2)
-	key.add_theme_constant_override("shadow_offset_y", 2)
+	key.add_theme_font_size_override("font_size", 26)
+	key.add_theme_color_override("font_color", Color("#fff0a8"))
+	key.add_theme_color_override("font_shadow_color", Color("#10101a"))
+	key.add_theme_constant_override("shadow_offset_x", 3)
+	key.add_theme_constant_override("shadow_offset_y", 3)
 	bite_hint.add_child(key)
 
-	var top_fang := _create_hint_fang(Vector2(-28, -16), false)
-	var bottom_fang := _create_hint_fang(Vector2(28, 18), true)
+	var top_fang := _create_hint_fang(Vector2(-30, -17), false)
+	var bottom_fang := _create_hint_fang(Vector2(36, 20), true)
 	bite_hint.add_child(top_fang)
 	bite_hint.add_child(bottom_fang)
 
@@ -314,15 +309,12 @@ func _build_player() -> void:
 # 選択状態の見た目とプレイヤー位置を更新する。
 func _update_selection(animated := true) -> void:
 	for i in boxes.size():
+		boxes[i].visible = _is_stage_unlocked(i)
 		var face := boxes[i].get_node("Face") as ColorRect
-		var locked := not _is_stage_unlocked(i)
-		var selected := i == selected_index and not locked
-		face.color = Color("#fff0a8") if selected else (Color("#464452") if locked else Color("#eee5c0"))
-		boxes[i].modulate = Color(0.52, 0.52, 0.60, 0.82) if locked else Color.WHITE
+		var selected := i == selected_index and _is_stage_unlocked(i)
+		face.color = Color("#fff0a8") if selected else Color("#eee5c0")
+		boxes[i].modulate = Color.WHITE
 		boxes[i].scale = Vector2(1.06, 1.06) if selected else Vector2.ONE
-		var lock_label := boxes[i].get_node_or_null("LockLabel") as Label
-		if lock_label != null:
-			lock_label.visible = locked
 
 	var target_position := _player_position_for_index(selected_index)
 	if animated:
@@ -334,7 +326,7 @@ func _update_selection(animated := true) -> void:
 		player_sprite.global_position = target_position
 	player_sprite.play(&"walk")
 	if bite_hint != null:
-		bite_hint.global_position = boxes[selected_index].global_position + Vector2(BOX_SIZE.x * 0.5, -24)
+		bite_hint.global_position = target_position + Vector2(70, -52)
 		bite_hint.visible = _is_stage_unlocked(selected_index)
 
 # 指定箱の前に立つプレイヤー位置を返す。
@@ -373,14 +365,19 @@ func _move_selection_linear(delta: int) -> void:
 	selected_index = unlocked_indices[current]
 	_update_selection()
 
-# 上下入力では同じ列の解放済みステージへだけ移動する。
-func _move_selection_grid(delta: int) -> void:
-	var target := selected_index + delta
-	if target < 0 or target >= boxes.size():
-		return
-	if not _is_stage_unlocked(target):
-		return
-	selected_index = target
+# 上下入力ではStage0とStage1以降の段を移動する。
+func _move_selection_vertical(direction: int) -> void:
+	if selected_index == 0 and direction > 0 and _is_stage_unlocked(1):
+		selected_index = 1
+	else:
+		var target := selected_index + direction * BOX_COLUMNS
+		if selected_index > 0 and direction < 0 and target < 1:
+			selected_index = 0
+			_update_selection()
+			return
+		if target < 1 or target >= boxes.size() or not _is_stage_unlocked(target):
+			return
+		selected_index = target
 	_update_selection()
 
 # 噛まれた箱を砕いて消す。
@@ -417,8 +414,8 @@ func _stage_star_text(stage_number: int) -> String:
 	var best := StageScoreStoreScript.best_for_stage("Stage%d" % stage_number)
 	var stars := int(best.get("stars", 0))
 	var text := ""
-	for i in 3:
-		text += "★" if i < stars else "☆"
+	for i in stars:
+		text += "★"
 	return text
 
 # stage_pathsから進行度保存用IDを作る。
