@@ -7,10 +7,10 @@ const StageScoreStoreScript := preload("res://scripts/stage/StageScoreStore.gd")
 const BOX_SIZE := Vector2(132, 104) # ステージ箱の表示サイズ。
 const BOX_GAP := 44.0 # 箱同士の間隔。
 const BOX_Y := 136.0 # Stage0箱の上端Y座標。
-const STAGE_GRID_Y := 308.0 # Stage1以降の箱を並べ始めるY座標。
-const BOX_ROW_GAP := 144.0 # 箱の段同士の間隔。
+const STAGE_GRID_Y := 322.0 # Stage1以降の箱を並べ始めるY座標。
+const BOX_ROW_GAP := 170.0 # 箱の段同士の間隔。
 const BOX_COLUMNS := 5 # 1段に並べる箱数。
-const PLAYER_Y_OFFSET := 62.0 # プレイヤーが箱から離れる距離。
+const PLAYER_Y_OFFSET := 38.0 # プレイヤーが箱から離れる距離。
 const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤーの表示倍率。
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
 const ROOM_WIDTH := 1280.0 # ステージ選択画面の基準幅。
@@ -269,7 +269,7 @@ func _build_bite_hint() -> void:
 	var key := Label.new()
 	key.name = "Key"
 	key.text = "K"
-	key.position = Vector2(-18, -18)
+	key.position = Vector2(-24, -18)
 	key.size = Vector2(48, 36)
 	key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -280,8 +280,8 @@ func _build_bite_hint() -> void:
 	key.add_theme_constant_override("shadow_offset_y", 3)
 	bite_hint.add_child(key)
 
-	var top_fang := _create_hint_fang(Vector2(-30, -17), false)
-	var bottom_fang := _create_hint_fang(Vector2(36, 20), true)
+	var top_fang := _create_hint_fang(Vector2(0, -18), false)
+	var bottom_fang := _create_hint_fang(Vector2(0, 18), true)
 	bite_hint.add_child(top_fang)
 	bite_hint.add_child(bottom_fang)
 
@@ -326,7 +326,7 @@ func _update_selection(animated := true) -> void:
 		player_sprite.global_position = target_position
 	player_sprite.play(&"walk")
 	if bite_hint != null:
-		bite_hint.global_position = target_position + Vector2(70, -52)
+		bite_hint.global_position = target_position + Vector2(0, -32)
 		bite_hint.visible = _is_stage_unlocked(selected_index)
 
 # 指定箱の前に立つプレイヤー位置を返す。

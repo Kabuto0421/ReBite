@@ -30,7 +30,7 @@ const BUTTON_POSITIONS := [Vector2(640, 450), Vector2(640, 575)]
 const PLAYER_SCALE := Vector2(1.9, 1.9)
 const PLAYER_X_OFFSET := -280.0
 const BITE_LUNGE_DISTANCE := 86.0
-const BITE_HINT_BUTTON_OFFSET := Vector2(-108, -70)
+const BITE_HINT_BUTTON_OFFSET := Vector2(-166, -30)
 const SETTINGS_ROW_POSITIONS: Array[Vector2] = [Vector2(640, 360), Vector2(640, 435)]
 const SETTINGS_SLIDER_WIDTH := 300.0
 
@@ -230,7 +230,7 @@ func _build_bite_hint() -> void:
 	key.texture = bite_hint_key_texture
 	key.centered = true
 	key.position = Vector2(0, 0)
-	key.scale = Vector2(0.38, 0.38) if DeviceProfileScript.should_use_touch_bite_hint() else Vector2(1.55, 1.55)
+	key.scale = Vector2(0.36, 0.36) if DeviceProfileScript.should_use_touch_bite_hint() else Vector2(1.42, 1.42)
 	key.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(key)
 
@@ -238,21 +238,21 @@ func _build_bite_hint() -> void:
 	text.name = "Text"
 	text.texture = bite_hint_text_texture
 	text.centered = true
-	text.position = Vector2(76, 1)
-	text.scale = Vector2(0.86, 0.86)
+	text.position = Vector2(70, 0)
+	text.scale = Vector2(0.78, 0.78)
 	text.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	bite_hint.add_child(text)
 
 	for config in [
-		{"name": "TopFang", "texture": bite_hint_top_fang_texture, "position": Vector2(-34, -19), "flip_v": false},
-		{"name": "BottomFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(-34, 20), "flip_v": true},
+		{"name": "TopFang", "texture": bite_hint_top_fang_texture, "position": Vector2(0, -25), "flip_v": false},
+		{"name": "BottomFang", "texture": bite_hint_bottom_fang_texture, "position": Vector2(0, 25), "flip_v": true},
 	]:
 		var fang := Sprite2D.new()
 		fang.name = config.name
 		fang.texture = config.texture
 		fang.centered = true
 		fang.position = config.position
-		fang.scale = Vector2(0.68, 0.68)
+		fang.scale = Vector2(0.58, 0.58)
 		fang.flip_v = config.flip_v
 		fang.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		bite_hint.add_child(fang)
