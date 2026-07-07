@@ -510,6 +510,7 @@ func show_stage_result(payload: Dictionary) -> void:
 	var message := str(payload.get("message", "STAGE CLEAR"))
 	var result := build_stage_score_result()
 	var best := StageScoreStoreScript.record_result(str(result.get("stage_id", _score_stage_id())), result)
+	var ranking := StageScoreStoreScript.ranking_payload()
 	stage_result_selected_index = 1 if not next_stage_path.is_empty() else 0
 	stage_result_choices.clear()
 	stage_result_moving = false
@@ -557,6 +558,19 @@ func show_stage_result(payload: Dictionary) -> void:
 		Vector2(660, 32)
 	)
 	panel.add_child(detail)
+
+	var total := _create_result_label(
+		"TOTAL SCORE  %d   CLEAR %d/%d" % [
+			int(ranking.get("total_score", 0)),
+			int(ranking.get("completed_stage_count", 0)),
+			int(ranking.get("stage_count", 0)),
+		],
+		23,
+		Color("#fff0a8"),
+		Vector2(0, 282),
+		Vector2(660, 32)
+	)
+	panel.add_child(total)
 
 	_create_result_choice(panel, "REPLAY", 0, Vector2(92, 330))
 	if not next_stage_path.is_empty():

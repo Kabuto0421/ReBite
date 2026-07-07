@@ -93,6 +93,24 @@ func _build_background() -> void:
 	header.add_theme_constant_override("shadow_offset_y", 4)
 	add_child(header)
 
+	var ranking := StageScoreStoreScript.ranking_payload()
+	var total := Label.new()
+	total.text = "TOTAL SCORE  %d    CLEAR  %d/%d" % [
+		int(ranking.get("total_score", 0)),
+		int(ranking.get("completed_stage_count", 0)),
+		int(ranking.get("stage_count", 0)),
+	]
+	total.position = Vector2(0, 88)
+	total.size = Vector2(ROOM_WIDTH, 32)
+	total.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	total.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	total.add_theme_font_size_override("font_size", 20)
+	total.add_theme_color_override("font_color", Color("#d5d9e2"))
+	total.add_theme_color_override("font_shadow_color", Color("#11121f"))
+	total.add_theme_constant_override("shadow_offset_x", 2)
+	total.add_theme_constant_override("shadow_offset_y", 2)
+	add_child(total)
+
 # 選択画面BGMを作成する。
 func _build_bgm() -> void:
 	stage_bgm = StageBgmScript.new()
