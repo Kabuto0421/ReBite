@@ -35,6 +35,7 @@ var player_dash_record: Resource # 主人公を落とすDASH記憶。
 var final_camera_override_active := false # Stage0終盤演出中に通常追従を上書きするか。
 var final_camera_position := Vector2.ZERO # Stage0終盤演出用のカメラ位置。
 var final_camera_zoom := Vector2.ONE # Stage0終盤演出用のカメラズーム。
+var practice_drop_pending := false # Playerの牙がSkullタグへ届いたら落下演出を始めるか。
 
 # 基盤初期化後に影キャラの演出を開始する。
 func _ready() -> void:
@@ -233,6 +234,14 @@ func _start_shadow_demo() -> void:
 # 練習SkullのDASHを噛んだら右の穴へ落としてから道を安全にする。
 func _on_practice_target_bitten() -> void:
 	_set_stage_objective("目標：Skullが落ちるのを見ろ")
+	practice_drop_pending = true
+
+# Playerの牙が実際にタグへ届いたタイミングで練習Skull落下演出を始める。
+func _on_player_bite_contact(target: Node) -> void:
+	super._on_player_bite_contact(target)
+	if target != practice_target or not practice_drop_pending:
+		return
+	practice_drop_pending = false
 	call_deferred("_play_practice_skull_drop_cinematic")
 
 # 練習用BLOCKがDASHで壊れた瞬間の手応えを出す。
@@ -241,7 +250,6 @@ func _on_practice_block_broken(_by_enemy: Node, _action_record: Resource) -> voi
 
 # 噛み成立後、短く停止してからSkullを穴へ落とす。
 func _play_practice_skull_drop_cinematic() -> void:
-	play_sfx(&"memory_tag_crack")
 	_set_player_control_enabled(false)
 	final_camera_override_active = true
 	final_camera_zoom = Vector2(1.72, 1.72)
@@ -252,6 +260,7 @@ func _play_practice_skull_drop_cinematic() -> void:
 	tween.tween_interval(0.28)
 	tween.tween_callback(func():
 		if practice_target != null:
+			final_camera_override_active = false
 			play_sfx(&"skull_dash")
 			practice_target.play_drop_dash(PRACTICE_HOLE_CENTER_X, 650.0)
 	)
