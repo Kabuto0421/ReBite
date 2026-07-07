@@ -12,6 +12,8 @@ const BOX_COLUMNS := 5 # 1段に並べる箱数。
 const PLAYER_Y_OFFSET := 62.0 # プレイヤーが箱から離れる距離。
 const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤーの表示倍率。
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
+const ROOM_WIDTH := 1280.0 # ステージ選択画面の基準幅。
+const ROOM_HEIGHT := 720.0 # ステージ選択画面の基準高さ。
 
 var stage_paths: Array[String] = [ # 各箱が開くステージScene。
 	"res://stage/Stage0.tscn",
@@ -32,6 +34,7 @@ var boxes: Array[Node2D] = [] # ステージ箱ノード一覧。
 var player_sprite: AnimatedSprite2D # 箱の前にいるプレイヤー。
 var stage_bgm: Node # 選択画面BGMを担当する部品。
 var moving := false # 噛み演出中かどうか。
+var bite_hint: Node2D # 選択箱をKで噛むことを示す表示。
 
 # 画面要素を生成する。
 func _ready() -> void:
@@ -63,17 +66,32 @@ func _unhandled_input(event: InputEvent) -> void:
 # 背景と床を作る。
 func _build_background() -> void:
 	var background := ColorRect.new()
-	background.color = Color(0.055, 0.06, 0.075)
-	background.size = Vector2(1280, 720)
+	background.color = Color("#080914")
+	background.size = Vector2(ROOM_WIDTH, ROOM_HEIGHT)
 	background.z_index = -20
 	add_child(background)
 
-	var floor := ColorRect.new()
-	floor.color = Color(0.13, 0.135, 0.15)
-	floor.position = Vector2(0, BOX_Y + BOX_SIZE.y + 52.0)
-	floor.size = Vector2(1280, 170)
-	floor.z_index = -10
-	add_child(floor)
+	for i in 9:
+		var band := ColorRect.new()
+		var alpha := 0.07 + float(i) * 0.012
+		band.color = Color(0.22, 0.13, 0.31, alpha)
+		band.position = Vector2(0, 90 + i * 58)
+		band.size = Vector2(ROOM_WIDTH, 24)
+		band.z_index = -18
+		add_child(band)
+
+	var header := Label.new()
+	header.text = "STAGE SELECT"
+	header.position = Vector2(0, 42)
+	header.size = Vector2(ROOM_WIDTH, 54)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	header.add_theme_font_size_override("font_size", 34)
+	header.add_theme_color_override("font_color", Color("#fff0a8"))
+	header.add_theme_color_override("font_shadow_color", Color("#2d1648"))
+	header.add_theme_constant_override("shadow_offset_x", 4)
+	header.add_theme_constant_override("shadow_offset_y", 4)
+	add_child(header)
 
 # 選択画面BGMを作成する。
 func _build_bgm() -> void:
@@ -94,6 +112,7 @@ func _build_stage_boxes() -> void:
 		box.position = Vector2(start_x + column * (BOX_SIZE.x + BOX_GAP), BOX_Y + row * BOX_ROW_GAP)
 		add_child(box)
 		boxes.append(box)
+	_build_bite_hint()
 
 # 箱の下をつなぐレールと足場を描く。
 func _build_route_tracks(start_x: float) -> void:
@@ -108,6 +127,7 @@ func _build_route_tracks(start_x: float) -> void:
 		for column in count:
 			var center_x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5
 			_add_track_bar(Vector2(center_x - 46.0, y - 8.0), Vector2(92.0, 10.0), Color("#d5a53c"))
+			_add_track_bar(Vector2(center_x - 36.0, y - 2.0), Vector2(72.0, 5.0), Color("#fff0a8"))
 	if rows > 1:
 		for column in BOX_COLUMNS:
 			var x := start_x + column * (BOX_SIZE.x + BOX_GAP) + BOX_SIZE.x * 0.5 - 8.0
@@ -132,6 +152,12 @@ func _create_stage_box(stage_number: int) -> Node2D:
 	shadow.position = Vector2(10, 12)
 	shadow.size = BOX_SIZE
 	root.add_child(shadow)
+
+	var pedestal_shadow := ColorRect.new()
+	pedestal_shadow.color = Color(0.0, 0.0, 0.0, 0.28)
+	pedestal_shadow.position = Vector2(12, BOX_SIZE.y + 8)
+	pedestal_shadow.size = Vector2(BOX_SIZE.x - 24, 18)
+	root.add_child(pedestal_shadow)
 
 	var face := ColorRect.new()
 	face.name = "Face"
@@ -187,7 +213,49 @@ func _create_stage_box(stage_number: int) -> Node2D:
 	stars.add_theme_constant_override("shadow_offset_y", 2)
 	root.add_child(stars)
 
+	var pedestal := ColorRect.new()
+	pedestal.color = Color("#3b2850")
+	pedestal.position = Vector2(16, BOX_SIZE.y + 2)
+	pedestal.size = Vector2(BOX_SIZE.x - 32, 14)
+	root.add_child(pedestal)
+
 	return root
+
+# Kで選ぶことを選択箱の近くに表示する。
+func _build_bite_hint() -> void:
+	bite_hint = Node2D.new()
+	bite_hint.name = "BiteHint"
+	bite_hint.z_index = 12
+	add_child(bite_hint)
+
+	var key := Label.new()
+	key.name = "Key"
+	key.text = "K"
+	key.position = Vector2(-20, -16)
+	key.size = Vector2(40, 32)
+	key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	key.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	key.add_theme_font_size_override("font_size", 22)
+	key.add_theme_color_override("font_color", Color("#1b1730"))
+	key.add_theme_color_override("font_shadow_color", Color("#fff0a8"))
+	key.add_theme_constant_override("shadow_offset_x", 2)
+	key.add_theme_constant_override("shadow_offset_y", 2)
+	bite_hint.add_child(key)
+
+	var top_fang := _create_hint_fang(Vector2(-28, -16), false)
+	var bottom_fang := _create_hint_fang(Vector2(28, 18), true)
+	bite_hint.add_child(top_fang)
+	bite_hint.add_child(bottom_fang)
+
+# 簡易的な牙マーカーを作る。
+func _create_hint_fang(position_value: Vector2, flip_vertical: bool) -> Polygon2D:
+	var fang := Polygon2D.new()
+	fang.position = position_value
+	fang.polygon = PackedVector2Array([Vector2(-10, -7), Vector2(10, -7), Vector2(0, 12)])
+	fang.color = Color("#99e8ff")
+	if flip_vertical:
+		fang.scale.y = -1.0
+	return fang
 
 # プレイヤーキャラクターを作る。
 func _build_player() -> void:
@@ -216,6 +284,8 @@ func _update_selection(animated := true) -> void:
 	else:
 		player_sprite.global_position = target_position
 	player_sprite.play(&"walk")
+	if bite_hint != null:
+		bite_hint.global_position = boxes[selected_index].global_position + Vector2(BOX_SIZE.x * 0.5, -24)
 
 # 指定箱の前に立つプレイヤー位置を返す。
 func _player_position_for_index(index: int) -> Vector2:
@@ -225,6 +295,8 @@ func _player_position_for_index(index: int) -> Vector2:
 # 選択中の箱に噛みついてステージへ移動する。
 func _bite_selected_stage() -> void:
 	moving = true
+	if bite_hint != null:
+		bite_hint.visible = false
 	var selected_box := boxes[selected_index]
 	var start_position := player_sprite.global_position
 	var bite_position := start_position + Vector2(0, -BITE_LUNGE_DISTANCE)
