@@ -456,7 +456,7 @@ func complete_stage(message: String = "STAGE CLEAR") -> void:
 	if stage_cleared:
 		return
 	stage_cleared = true
-	stage_hud.set_clear_text(message)
+	stage_hud.set_clear_text("")
 	_shake_camera(16.0, 0.22)
 	stage_state_machine.change_state(&"Clear", {
 		"message": message,
