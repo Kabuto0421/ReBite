@@ -599,9 +599,6 @@ func hide_stage_result() -> void:
 func handle_stage_result_input(event: InputEvent) -> void:
 	if stage_result_layer == null or stage_result_moving:
 		return
-	if event.is_action_pressed("replay"):
-		get_tree().reload_current_scene()
-		return
 	if event.is_action_pressed("move_left"):
 		_select_stage_result_choice(-1)
 	elif event.is_action_pressed("move_right"):
