@@ -20,11 +20,11 @@ const PLAYER_SCALE := Vector2(1.7, 1.7) # ステージ選択用プレイヤー�
 const BITE_LUNGE_DISTANCE := 72.0 # 噛み入力時に箱へ寄る距離。
 const ROOM_WIDTH := 1280.0 # ステージ選択画面の基準幅。
 const ROOM_HEIGHT := 720.0 # ステージ選択画面の基準高さ。
-const BITE_HINT_FANG_SCALE := 0.68 # 選択箱を囲う牙の表示倍率。大きくすると箱角への噛み込みが強く見える。
-const BITE_HINT_KEY_SCALE := 0.58 # Kキートップの表示倍率。大きくすると操作案内が強く見える。
-const BITE_HINT_TOP_FANG_INSET := Vector2(21.0, 11.0) # 選択箱の左上/右上角から牙を内側へ寄せる量。
-const BITE_HINT_BOTTOM_FANG_INSET := Vector2(21.0, 5.0) # 選択箱の左下/右下角から牙を内側へ寄せる量。
-const BITE_HINT_KEY_OFFSET := Vector2(0.0, -14.0) # 選択箱上辺中央からK表示をずらす量。
+const BITE_HINT_FANG_SCALE := 1.0 # 選択箱を囲う牙の表示倍率。大きくすると箱角への噛み込みが強く見える。
+const BITE_HINT_KEY_SCALE := 1.0 # Kキートップの表示倍率。大きくすると操作案内が強く見える。
+const BITE_HINT_TOP_FANG_INSET := Vector2(10.0, 5.0) # 選択箱の左上/右上角から牙を内側へ寄せる量。
+const BITE_HINT_BOTTOM_FANG_INSET := Vector2(10.0, 5.0) # 選択箱の左下/右下角から牙を内側へ寄せる量。
+const BITE_HINT_KEY_OFFSET := Vector2(0.0, -15.0) # 選択箱上辺中央からK表示をずらす量。
 
 var stage_paths: Array[String] = [ # 各箱が開くステージScene。
 	"res://stage/Stage0.tscn",

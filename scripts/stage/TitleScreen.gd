@@ -26,11 +26,11 @@ const BITE_HINT_TOP_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_top_fang.png
 const BITE_HINT_BOTTOM_FANG_TEXTURE_PATH := "res://assets/ui/bite_hint_bottom_fang.png"
 
 const BUTTON_SIZE := Vector2(392, 124)
-const BUTTON_POSITIONS := [Vector2(640, 450), Vector2(640, 575)]
+const BUTTON_POSITIONS := [Vector2(640, 500), Vector2(640, 625)]
 const PLAYER_SCALE := Vector2(1.9, 1.9)
-const PLAYER_X_OFFSET := -280.0
+const PLAYER_X_OFFSET := -230.0
 const BITE_LUNGE_DISTANCE := 86.0
-const BITE_HINT_FANG_SCALE := 0.58
+const BITE_HINT_FANG_SCALE := 1.0
 const BITE_HINT_KEY_SCALE := 1.42
 const BITE_HINT_TOUCH_KEY_SCALE := 0.36
 const BITE_HINT_TEXT_SCALE := 0.78
