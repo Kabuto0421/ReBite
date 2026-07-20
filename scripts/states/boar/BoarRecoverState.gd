@@ -14,7 +14,7 @@ func enter(_payload: Variant = null) -> void:
 # Playerへ歩き、射程内なら次の自律SMASHへ戻る。
 func physics_update(delta: float) -> void:
 	timer -= delta
-	if owner_node.memory_tag.has_method("set_window_progress"):
+	if owner_node.has_method("should_update_memory_tag_urgency") and owner_node.should_update_memory_tag_urgency() and owner_node.memory_tag.has_method("set_window_progress"):
 		owner_node.memory_tag.set_window_progress(timer / memory_walk_time)
 	owner_node.apply_gravity(delta)
 	if owner_node.is_patrol_carrier():

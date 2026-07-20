@@ -71,7 +71,7 @@ func _run() -> void:
 	for _frame in 10:
 		await physics_frame
 	assert(chasing_boar.current_state_name() == &"Recover")
-	player.global_position = Vector2(60, 0)
+	player.global_position = chasing_boar.global_position + Vector2(60, 0)
 	for _frame in 4:
 		await physics_frame
 	assert(chasing_boar.current_state_name() == &"Telegraph")

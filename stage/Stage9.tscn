@@ -1,109 +1,109 @@
-[gd_scene load_steps=12 format=3 uid="uid://dpqk0f3wytyik"]
+[gd_scene format=3 uid="uid://dpqk0f3wytyik"]
 
-[ext_resource type="Script" path="res://scripts/stage/Stage9.gd" id="1_stage"]
-[ext_resource type="Script" path="res://scripts/stage/EditableTileGroup.gd" id="2_tiles"]
-[ext_resource type="Script" path="res://scripts/stage/TileRectPart.gd" id="3_part"]
-[ext_resource type="Script" path="res://scripts/stage/ActionBreakGroup.gd" id="4_break"]
-[ext_resource type="Script" path="res://scripts/stage/EditableSpikes.gd" id="5_spikes"]
-[ext_resource type="PackedScene" path="res://entities/Player.tscn" id="6_player"]
+[ext_resource type="Script" uid="uid://bnkfvhw452dly" path="res://scripts/stage/Stage9.gd" id="1_stage"]
+[ext_resource type="Script" uid="uid://byaoeng66raoo" path="res://scripts/stage/EditableTileGroup.gd" id="2_tiles"]
+[ext_resource type="Script" uid="uid://c7goycfy8e30" path="res://scripts/stage/TileRectPart.gd" id="3_part"]
+[ext_resource type="Script" uid="uid://d3fj52yx8ghxs" path="res://scripts/stage/ActionBreakGroup.gd" id="4_break"]
+[ext_resource type="Script" uid="uid://clk4sq46xloom" path="res://scripts/stage/EditableSpikes.gd" id="5_spikes"]
+[ext_resource type="PackedScene" uid="uid://db8hokaod4pe4" path="res://entities/Player.tscn" id="6_player"]
 [ext_resource type="PackedScene" path="res://entities/SkullMonster.tscn" id="7_skull"]
 [ext_resource type="PackedScene" path="res://entities/boar_monster.tscn" id="8_boar"]
-[ext_resource type="PackedScene" path="res://props/GuidanceLantern.tscn" id="9_lantern"]
+[ext_resource type="PackedScene" uid="uid://br3q5g48c8vvv" path="res://props/GuidanceLantern.tscn" id="9_lantern"]
 [ext_resource type="PackedScene" path="res://props/TauntStake.tscn" id="10_stake"]
 [ext_resource type="PackedScene" path="res://props/Rockfall.tscn" id="11_rock"]
 
-[node name="Stage9" type="Node2D"]
+[node name="Stage9" type="Node2D" unique_id=1338049040]
 script = ExtResource("1_stage")
 next_stage_path = "res://stage/Stage10.tscn"
 stage_display_name = "STAGE 9"
 
-[node name="EditableGeometry" type="Node2D" parent="."]
+[node name="EditableGeometry" type="Node2D" parent="." unique_id=1265594343]
 
-[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry"]
+[node name="NormalTileGroups" type="Node2D" parent="EditableGeometry" unique_id=2512530]
 z_index = -5
 script = ExtResource("2_tiles")
 
-[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_LeftWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1157232425]
 position = Vector2(32, -32)
 script = ExtResource("3_part")
 rect_name = "LeftWall"
 size = Vector2(32, 800)
 
-[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_RightWall" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1696080998]
 position = Vector2(1856, -32)
 script = ExtResource("3_part")
 rect_name = "RightWall"
 size = Vector2(32, 800)
 
-[node name="Rect_Ceiling" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_Ceiling" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=779414861]
 position = Vector2(32, -64)
 script = ExtResource("3_part")
 rect_name = "Ceiling"
 size = Vector2(1856, 32)
 
-[node name="Rect_TopLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_TopLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=584819381]
 position = Vector2(64, 192)
 script = ExtResource("3_part")
 rect_name = "TopLane_A_to_B"
 size = Vector2(976, 32)
 
-[node name="Rect_TopPostDropLedge" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_TopPostDropLedge" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=69537786]
 position = Vector2(1200, 192)
 script = ExtResource("3_part")
 rect_name = "TopPostDropLedge"
 size = Vector2(360, 32)
 
-[node name="Rect_TopStepDown1" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_TopStepDown1" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1023749397]
 position = Vector2(1512, 272)
 script = ExtResource("3_part")
 rect_name = "TopStepDown1"
 size = Vector2(280, 32)
 
-[node name="Rect_TopStepDown2" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_TopStepDown2" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=880334394]
 position = Vector2(1400, 352)
 script = ExtResource("3_part")
 rect_name = "TopStepDown2"
 size = Vector2(280, 32)
 
-[node name="Rect_MiddleLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_MiddleLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=626234730]
 position = Vector2(64, 416)
 script = ExtResource("3_part")
 rect_name = "MiddleLane_A_to_B"
 size = Vector2(976, 32)
 
-[node name="Rect_MiddleRockLane" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_MiddleRockLane" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1495451427]
 position = Vector2(1200, 416)
 script = ExtResource("3_part")
 rect_name = "MiddleRockLane"
 size = Vector2(560, 32)
 
-[node name="Rect_MiddleStepDown1" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_MiddleStepDown1" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1166685489]
 position = Vector2(1512, 496)
 script = ExtResource("3_part")
 rect_name = "MiddleStepDown1"
 size = Vector2(280, 32)
 
-[node name="Rect_MiddleStepDown2" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_MiddleStepDown2" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=590138265]
 position = Vector2(1400, 576)
 script = ExtResource("3_part")
 rect_name = "MiddleStepDown2"
 size = Vector2(280, 32)
 
-[node name="Rect_BottomLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_BottomLane_A_to_B" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1924838679]
 position = Vector2(64, 640)
 script = ExtResource("3_part")
 rect_name = "BottomLane_A_to_B"
 size = Vector2(976, 32)
 
-[node name="Rect_BottomPostDropLedge" type="Node2D" parent="EditableGeometry/NormalTileGroups"]
+[node name="Rect_BottomPostDropLedge" type="Node2D" parent="EditableGeometry/NormalTileGroups" unique_id=1698804278]
 position = Vector2(1200, 640)
 script = ExtResource("3_part")
 rect_name = "BottomPostDropLedge"
 size = Vector2(560, 32)
 
-[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry"]
+[node name="ActionBreakGroups" type="Node2D" parent="EditableGeometry" unique_id=1541089979]
 
-[node name="ActionBreakGroup_TopDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups"]
+[node name="ActionBreakGroup_TopDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=943074226]
 editor_description = "上層C地点。BoarTopの再演SMASHで崩れ、Boarを下のトゲへ落とす。"
 z_index = -5
 script = ExtResource("4_break")
@@ -111,13 +111,13 @@ accepted_actions = Array[StringName]([&"smash"])
 direction_dot_threshold = 0.0
 blocks_enemy = true
 
-[node name="Rect_TopDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_TopDrop"]
+[node name="Rect_TopDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_TopDrop" unique_id=1321576101]
 position = Vector2(1040, 192)
 script = ExtResource("3_part")
 rect_name = "TopDropFloor"
 size = Vector2(160, 32)
 
-[node name="ActionBreakGroup_MiddleDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups"]
+[node name="ActionBreakGroup_MiddleDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=1996899166]
 editor_description = "中層C地点。BoarMiddleの再演SMASHで床を崩しつつ、右の岩を吹き飛ばす。"
 z_index = -5
 script = ExtResource("4_break")
@@ -125,13 +125,13 @@ accepted_actions = Array[StringName]([&"smash"])
 direction_dot_threshold = 0.0
 blocks_enemy = true
 
-[node name="Rect_MiddleDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_MiddleDrop"]
+[node name="Rect_MiddleDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_MiddleDrop" unique_id=1913299402]
 position = Vector2(1040, 416)
 script = ExtResource("3_part")
 rect_name = "MiddleDropFloor"
 size = Vector2(160, 32)
 
-[node name="ActionBreakGroup_BottomDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups"]
+[node name="ActionBreakGroup_BottomDrop" type="Node2D" parent="EditableGeometry/ActionBreakGroups" unique_id=232937615]
 editor_description = "下層C地点。BoarBottomの再演SMASHで崩れ、周囲のSkullごと落とす。"
 z_index = -5
 script = ExtResource("4_break")
@@ -139,36 +139,36 @@ accepted_actions = Array[StringName]([&"smash"])
 direction_dot_threshold = 0.0
 blocks_enemy = true
 
-[node name="Rect_BottomDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_BottomDrop"]
+[node name="Rect_BottomDropFloor" type="Node2D" parent="EditableGeometry/ActionBreakGroups/ActionBreakGroup_BottomDrop" unique_id=1704070706]
 position = Vector2(1040, 640)
 script = ExtResource("3_part")
 rect_name = "BottomDropFloor"
 size = Vector2(160, 32)
 
-[node name="SpikePitTopDrop" type="Node2D" parent="EditableGeometry"]
+[node name="SpikePitTopDrop" type="Node2D" parent="EditableGeometry" unique_id=1147999220]
 z_index = -3
 position = Vector2(1040, 288)
 script = ExtResource("5_spikes")
 size = Vector2(160, 32)
 
-[node name="SpikePitMiddleDrop" type="Node2D" parent="EditableGeometry"]
+[node name="SpikePitMiddleDrop" type="Node2D" parent="EditableGeometry" unique_id=847612729]
 z_index = -3
 position = Vector2(1040, 512)
 script = ExtResource("5_spikes")
 size = Vector2(160, 32)
 
-[node name="SpikePitBottomDrop" type="Node2D" parent="EditableGeometry"]
+[node name="SpikePitBottomDrop" type="Node2D" parent="EditableGeometry" unique_id=500902311]
 z_index = -3
 position = Vector2(1040, 736)
 script = ExtResource("5_spikes")
 size = Vector2(160, 32)
 
-[node name="Player" parent="." instance=ExtResource("6_player")]
+[node name="Player" parent="." unique_id=1065121282 instance=ExtResource("6_player")]
 position = Vector2(112, 192)
 jump_velocity = -500.0
 
-[node name="BoarTop" parent="." instance=ExtResource("8_boar")]
-position = Vector2(600, 192)
+[node name="BoarTop" parent="." unique_id=1310767292 instance=ExtResource("8_boar")]
+position = Vector2(423, 192)
 walk_speed = 72.0
 smash_range = 96.0
 smash_lane_y_tolerance = 40.0
@@ -176,10 +176,10 @@ behavior_mode = 1
 patrol_smash_point = Vector2(600, 192)
 patrol_turn_point = Vector2(900, 192)
 patrol_branch_point = Vector2(1120, 192)
-patrol_smash_direction = Vector2(-1, 0)
+patrol_smash_target_path = NodePath("../TauntStake_TopA")
 patrol_arrival_distance = 16.0
 
-[node name="BoarMiddle" parent="." instance=ExtResource("8_boar")]
+[node name="BoarMiddle" parent="." unique_id=1447241536 instance=ExtResource("8_boar")]
 position = Vector2(600, 416)
 initial_direction = Vector2(1, 0)
 walk_speed = 72.0
@@ -190,9 +190,10 @@ patrol_smash_point = Vector2(600, 416)
 patrol_turn_point = Vector2(900, 416)
 patrol_branch_point = Vector2(1120, 416)
 patrol_smash_direction = Vector2(1, 0)
+patrol_smash_target_path = NodePath("../TauntStake_MiddleA")
 patrol_arrival_distance = 16.0
 
-[node name="BoarBottom" parent="." instance=ExtResource("8_boar")]
+[node name="BoarBottom" parent="." unique_id=1157611133 instance=ExtResource("8_boar")]
 position = Vector2(600, 640)
 walk_speed = 72.0
 smash_range = 96.0
@@ -201,53 +202,53 @@ behavior_mode = 1
 patrol_smash_point = Vector2(600, 640)
 patrol_turn_point = Vector2(900, 640)
 patrol_branch_point = Vector2(1120, 640)
-patrol_smash_direction = Vector2(-1, 0)
+patrol_smash_target_path = NodePath("../TauntStake_BottomA")
 patrol_arrival_distance = 16.0
 
-[node name="Rockfall_Middle" parent="." instance=ExtResource("11_rock")]
+[node name="Rockfall_Middle" parent="." unique_id=1780993869 instance=ExtResource("11_rock")]
 position = Vector2(1210, 392)
 can_kill_player = false
 
-[node name="SkullRockTargetA" parent="." instance=ExtResource("7_skull")]
+[node name="SkullRockTargetA" parent="." unique_id=1809799375 instance=ExtResource("7_skull")]
 position = Vector2(1390, 416)
 initial_dash_memory = 2
 
-[node name="SkullRockTargetB" parent="." instance=ExtResource("7_skull")]
+[node name="SkullRockTargetB" parent="." unique_id=1247480455 instance=ExtResource("7_skull")]
 position = Vector2(1500, 416)
 initial_dash_memory = 2
 
-[node name="SkullBottomVictimA" parent="." instance=ExtResource("7_skull")]
+[node name="SkullBottomVictimA" parent="." unique_id=1398871763 instance=ExtResource("7_skull")]
 position = Vector2(1068, 640)
 initial_dash_memory = 2
 
-[node name="SkullBottomVictimB" parent="." instance=ExtResource("7_skull")]
+[node name="SkullBottomVictimB" parent="." unique_id=5293615 instance=ExtResource("7_skull")]
 position = Vector2(1170, 640)
 initial_dash_memory = 2
 
-[node name="TauntStake_TopA" parent="." instance=ExtResource("10_stake")]
+[node name="TauntStake_TopA" parent="." unique_id=400537166 instance=ExtResource("10_stake")]
 position = Vector2(556, 192)
 
-[node name="TauntStake_MiddleA" parent="." instance=ExtResource("10_stake")]
+[node name="TauntStake_MiddleA" parent="." unique_id=677541901 instance=ExtResource("10_stake")]
 position = Vector2(644, 416)
 
-[node name="TauntStake_BottomA" parent="." instance=ExtResource("10_stake")]
+[node name="TauntStake_BottomA" parent="." unique_id=755528178 instance=ExtResource("10_stake")]
 position = Vector2(556, 640)
 
-[node name="GuidanceLantern_TopC" parent="." instance=ExtResource("9_lantern")]
+[node name="GuidanceLantern_TopC" parent="." unique_id=900523912 instance=ExtResource("9_lantern")]
 position = Vector2(1120, 120)
 sway_enabled = true
 sway_angle = 8.0
 sway_speed = 0.4
 vertical_sway = 0.5
 
-[node name="GuidanceLantern_MiddleC" parent="." instance=ExtResource("9_lantern")]
+[node name="GuidanceLantern_MiddleC" parent="." unique_id=1932873198 instance=ExtResource("9_lantern")]
 position = Vector2(1120, 344)
 sway_enabled = true
 sway_angle = 8.0
 sway_speed = 0.4
 vertical_sway = 0.5
 
-[node name="GuidanceLantern_BottomC" parent="." instance=ExtResource("9_lantern")]
+[node name="GuidanceLantern_BottomC" parent="." unique_id=643477407 instance=ExtResource("9_lantern")]
 position = Vector2(1120, 568)
 sway_enabled = true
 sway_angle = 8.0

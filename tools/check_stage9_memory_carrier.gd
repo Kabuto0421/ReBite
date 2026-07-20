@@ -19,6 +19,7 @@ func _run() -> void:
 	var middle_drop: Node = scene.get_node("EditableGeometry/ActionBreakGroups/ActionBreakGroup_MiddleDrop")
 	var bottom_drop: Node = scene.get_node("EditableGeometry/ActionBreakGroups/ActionBreakGroup_BottomDrop")
 	var rock: Node = scene.get_node("Rockfall_Middle")
+	var hitbox_shape := boar_middle.get_node("AttackHitbox/CollisionShape2D").shape as RectangleShape2D
 
 	assert(scene.get_script().resource_path.ends_with("Stage9.gd"))
 	assert(scene.goal_area == null)
@@ -34,7 +35,14 @@ func _run() -> void:
 	assert(boar_top.patrol_smash_point == Vector2(600, 192))
 	assert(boar_middle.patrol_smash_point == Vector2(600, 416))
 	assert(boar_bottom.patrol_smash_point == Vector2(600, 640))
-	assert(boar_middle.patrol_smash_direction == Vector2.RIGHT)
+	assert(boar_top.patrol_smash_target_path == NodePath("../TauntStake_TopA"))
+	assert(boar_middle.patrol_smash_target_path == NodePath("../TauntStake_MiddleA"))
+	assert(boar_bottom.patrol_smash_target_path == NodePath("../TauntStake_BottomA"))
+	assert(not boar_top.memory_tag_urgency_enabled)
+	assert(not boar_middle.memory_tag_urgency_enabled)
+	assert(not boar_bottom.memory_tag_urgency_enabled)
+	assert(hitbox_shape.size.y >= 68.0)
+	assert(boar_middle.attack_hitbox.position.y > -20.0)
 	assert(top_drop.accepted_actions == [&"smash"])
 	assert(middle_drop.accepted_actions == [&"smash"])
 	assert(bottom_drop.accepted_actions == [&"smash"])
@@ -45,6 +53,9 @@ func _run() -> void:
 	_assert_routes_to_branch(boar_top)
 	_assert_routes_to_branch(boar_middle)
 	_assert_routes_to_branch(boar_bottom)
+	_assert_target_smash_direction(boar_top, Vector2.LEFT)
+	_assert_target_smash_direction(boar_middle, Vector2.RIGHT)
+	_assert_target_smash_direction(boar_bottom, Vector2.LEFT)
 	_assert_drop_breaks(boar_top, top_drop, Vector2.LEFT)
 	_assert_drop_breaks(boar_middle, middle_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_bottom, bottom_drop, Vector2.LEFT)
@@ -74,3 +85,10 @@ func _assert_drop_breaks(boar: BoarMonster, drop_group: Node, direction: Vector2
 	boar.set_active_action_record(smash_record)
 	assert(drop_group._can_break_with(boar))
 	boar.clear_active_action_record(smash_record)
+
+func _assert_target_smash_direction(boar: BoarMonster, expected_direction: Vector2) -> void:
+	var previous_position := boar.global_position
+	boar.global_position = boar.patrol_smash_point
+	var record: Resource = boar.build_autonomous_smash_record()
+	assert(record.direction == expected_direction)
+	boar.global_position = previous_position

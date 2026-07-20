@@ -38,7 +38,7 @@ const HINT_PARTS := {
 	"key": {"texture": KEY_TEXTURE_PATH, "position": Vector2(0, -49), "scale": HINT_KEY_SCALE, "flip_h": false, "flip_v": false},
 }
 
-@export_range(0.2, 0.9, 0.05) var blink_start_progress := 0.70 # タグ更新までの残り割合がこの値を下回ると点滅する。
+@export_range(0.05, 0.9, 0.01) var blink_start_progress := 0.12 # タグ更新までの残り割合がこの値を下回ると点滅する。
 
 @onready var label: Label = $Label
 @onready var crack: Label = $Crack

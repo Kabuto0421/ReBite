@@ -19,12 +19,14 @@ enum BehaviorMode { PLAYER_CHASE, PATROL_CARRIER }
 @export var smash_range := 150.0 # この距離以内ならSMASHへ入る。
 @export var smash_lane_y_tolerance := 44.0 # PlayerとのY差がこの範囲内の時だけSMASHする。
 @export var behavior_mode := BehaviorMode.PLAYER_CHASE # Playerを追うか、巡回点で記憶を運ぶか。
+@export var memory_tag_urgency_enabled := false # タグ上書き直前の点滅を使うか。
 
 @export_group("Patrol Carrier")
 @export var patrol_smash_point := Vector2.ZERO # A地点。通常SMASHを作る場所。
 @export var patrol_turn_point := Vector2.ZERO # B地点。通常時はここでAへ折り返す。
 @export var patrol_branch_point := Vector2.ZERO # C地点。分岐解放後に記憶を運ぶ場所。
 @export var patrol_smash_direction := Vector2.LEFT # A地点で作るSMASH記憶の向き。
+@export var patrol_smash_target_path := NodePath("") # 設定時はこの標的の方向へSMASHする。
 @export var patrol_arrival_distance := 12.0 # 巡回点へ到着したとみなす距離。
 
 var walk_direction := Vector2.LEFT # タグ保持中に歩いている向き。
@@ -104,12 +106,17 @@ func is_player_in_smash_range() -> bool:
 		return false
 	return absf(player.global_position.x - global_position.x) <= smash_range
 
+# 記憶タグの期限警告表示を使うか返す。
+func should_update_memory_tag_urgency() -> bool:
+	return memory_tag_urgency_enabled
+
 # 現在の行動原理に応じた自律SMASH記録を作る。
 func build_autonomous_smash_record() -> Resource:
 	if is_patrol_carrier():
 		patrol_waiting_at_branch = false
-		prepare_smash_record(patrol_smash_direction)
-		set_facing_direction(patrol_smash_direction)
+		var smash_direction := _patrol_smash_direction()
+		prepare_smash_record(smash_direction)
+		set_facing_direction(smash_direction)
 		return last_record
 	face_player()
 	prepare_smash_record(walk_direction)
@@ -230,3 +237,13 @@ func _set_patrol_target(point_id: StringName, point: Vector2) -> void:
 	patrol_target_id = point_id
 	patrol_target_point = point
 	patrol_waiting_at_branch = false
+
+# 巡回A地点でSMASHする向きを、標的があれば標的位置から決める。
+func _patrol_smash_direction() -> Vector2:
+	if not patrol_smash_target_path.is_empty():
+		var target := get_node_or_null(patrol_smash_target_path)
+		if target != null and target is Node2D:
+			var delta: Vector2 = (target as Node2D).global_position - global_position
+			if not is_zero_approx(delta.x):
+				return _horizontal_direction(delta)
+	return patrol_smash_direction

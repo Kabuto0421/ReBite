@@ -60,6 +60,9 @@ func _run() -> void:
 	assert(skull.is_biteable())
 	await _settle_seconds(skull.dash_duration * 0.40)
 	assert(skull.current_state_name() == &"RightDash")
+	assert(skull.memory_tag.window_progress > skull.memory_tag.blink_start_progress)
+	skull.memory_tag.set_window_progress(0.10)
+	assert(skull.current_state_name() == &"RightDash")
 	assert(skull.memory_tag.window_progress < skull.memory_tag.blink_start_progress)
 
 	player.global_position = skull.global_position + Vector2(58.0, 0.0)
