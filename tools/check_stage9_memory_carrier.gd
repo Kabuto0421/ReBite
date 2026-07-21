@@ -63,6 +63,7 @@ func _run() -> void:
 	_assert_drop_breaks(boar_top, top_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_middle, middle_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_bottom, bottom_drop, Vector2.LEFT)
+	await _assert_attack_hitbox_overlaps_break_sensor(boar_top, top_drop)
 	await _assert_runtime_drop_breaks(boar_top, top_drop, Vector2.RIGHT)
 
 	var smash_record: Resource = ActionRecordScript.new(&"smash", Vector2.RIGHT, Vector2.RIGHT * boar_middle.smash_speed, 0.2, &"REBITE_REPLAY")
@@ -108,3 +109,13 @@ func _assert_runtime_drop_breaks(boar: BoarMonster, drop_group: Node, direction:
 	await physics_frame
 	assert(drop_group.broken_state)
 	boar.clear_active_action_record(smash_record)
+
+func _assert_attack_hitbox_overlaps_break_sensor(boar: BoarMonster, drop_group: Node) -> void:
+	drop_group.reset_group()
+	boar.global_position = boar.patrol_branch_point
+	boar.set_facing_direction(Vector2.RIGHT)
+	boar.set_attack_hitbox_active(true)
+	await physics_frame
+	var sensor := drop_group.get_node("BreakSensor") as Area2D
+	assert(sensor.get_overlapping_areas().has(boar.attack_hitbox))
+	boar.set_attack_hitbox_active(false)

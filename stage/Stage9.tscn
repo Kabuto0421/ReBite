@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://clk4sq46xloom" path="res://scripts/stage/EditableSpikes.gd" id="5_spikes"]
 [ext_resource type="PackedScene" uid="uid://db8hokaod4pe4" path="res://entities/Player.tscn" id="6_player"]
 [ext_resource type="PackedScene" path="res://entities/SkullMonster.tscn" id="7_skull"]
-[ext_resource type="PackedScene" path="res://entities/boar_monster.tscn" id="8_boar"]
+[ext_resource type="PackedScene" uid="uid://d32p7mtkpenx2" path="res://entities/boar_monster.tscn" id="8_boar"]
 [ext_resource type="PackedScene" uid="uid://br3q5g48c8vvv" path="res://props/GuidanceLantern.tscn" id="9_lantern"]
 [ext_resource type="PackedScene" path="res://props/TauntStake.tscn" id="10_stake"]
 [ext_resource type="PackedScene" path="res://props/Rockfall.tscn" id="11_rock"]
@@ -168,7 +168,7 @@ position = Vector2(112, 192)
 jump_velocity = -500.0
 
 [node name="BoarTop" parent="." unique_id=1310767292 instance=ExtResource("8_boar")]
-position = Vector2(423, 192)
+position = Vector2(418, 192)
 walk_speed = 72.0
 smash_range = 96.0
 smash_lane_y_tolerance = 40.0

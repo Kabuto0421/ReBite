@@ -24,6 +24,7 @@ func _run() -> void:
 	assert(boar.sprite.sprite_frames.get_frame_count(&"walk") == 6)
 	assert(boar.sprite.sprite_frames.get_frame_count(&"smash") == 10)
 	assert(boar.sprite.sprite_frames.get_frame_count(&"dead") == 10)
+	_assert_smash_hitbox_reaches_floor_break_sensor(boar)
 
 	var committed_record: Resource = boar.last_record
 	boar.commit_smash_record(committed_record)
@@ -84,3 +85,15 @@ func _run() -> void:
 	player.queue_free()
 	await process_frame
 	quit(0)
+
+func _assert_smash_hitbox_reaches_floor_break_sensor(boar: BoarMonster) -> void:
+	var attack_shape := boar.get_node("AttackHitbox/CollisionShape2D").shape as RectangleShape2D
+	var attack_hitbox := boar.get_node("AttackHitbox") as Area2D
+	assert(attack_hitbox.collision_layer & 4)
+	assert(attack_shape.size.y >= 96.0)
+	var top_left := attack_hitbox.position - attack_shape.size * 0.5
+	var bottom_right := attack_hitbox.position + attack_shape.size * 0.5
+	var floor_sensor_top := -18.0
+	var floor_sensor_bottom := 50.0
+	assert(top_left.y <= floor_sensor_bottom)
+	assert(bottom_right.y >= floor_sensor_top)

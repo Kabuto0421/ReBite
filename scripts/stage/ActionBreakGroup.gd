@@ -62,6 +62,7 @@ func _build_runtime_tiles() -> void:
 	_visual_root = TileGroupBuilderScript.build_visuals(self, parts, tile_modulate, "GeneratedTiles", tile_texture_path)
 	_break_area = TileGroupBuilderScript.build_area(self, _probe_parts(), 0, 5, "BreakSensor")
 	_break_area.body_entered.connect(_on_break_area_body_entered)
+	_break_area.area_entered.connect(_on_break_area_area_entered)
 
 # すでに検知範囲内にいる敵や落石が行動を開始した場合も再判定する。
 func _physics_process(_delta: float) -> void:
@@ -73,6 +74,11 @@ func _physics_process(_delta: float) -> void:
 		if _can_break_with(body):
 			_break(body, _current_action_record(body))
 			return
+	for area in _break_area.get_overlapping_areas():
+		var source := _break_source_from_area(area)
+		if source != null and _can_break_with(source):
+			_break(source, _current_action_record(source))
+			return
 
 # 破壊検知に入った敵の現在行動を確認する。
 func _on_break_area_body_entered(body: Node) -> void:
@@ -82,6 +88,15 @@ func _on_break_area_body_entered(body: Node) -> void:
 		return
 	var record := _current_action_record(body)
 	_break(body, record)
+
+# 攻撃Areaが検知範囲に入った場合、その親の現在行動で破壊できるか確認する。
+func _on_break_area_area_entered(area: Area2D) -> void:
+	if broken_state and break_once:
+		return
+	var source := _break_source_from_area(area)
+	if source == null or not _can_break_with(source):
+		return
+	_break(source, _current_action_record(source))
 
 # 指定bodyがこのグループを壊せるか判定する。
 func _can_break_with(body: Node) -> bool:
@@ -100,6 +115,15 @@ func _current_action_record(body: Node) -> Resource:
 		return null
 	if body.has_method("current_action_record"):
 		return body.current_action_record()
+	return null
+
+# 攻撃Areaから行動を持つ親ノードを取り出す。
+func _break_source_from_area(area: Area2D) -> Node:
+	if area == null:
+		return null
+	var parent := area.get_parent()
+	if parent != null and parent.has_method("current_action_record"):
+		return parent
 	return null
 
 # 行動方向の先にこのグループがあるか判定する。
