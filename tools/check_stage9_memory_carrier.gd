@@ -63,6 +63,7 @@ func _run() -> void:
 	_assert_drop_breaks(boar_top, top_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_middle, middle_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_bottom, bottom_drop, Vector2.LEFT)
+	await _assert_runtime_drop_breaks(boar_top, top_drop, Vector2.RIGHT)
 
 	var smash_record: Resource = ActionRecordScript.new(&"smash", Vector2.RIGHT, Vector2.RIGHT * boar_middle.smash_speed, 0.2, &"REBITE_REPLAY")
 	boar_middle.set_active_action_record(smash_record)
@@ -96,3 +97,14 @@ func _assert_target_smash_direction(boar: BoarMonster, expected_direction: Vecto
 	var record: Resource = boar.build_autonomous_smash_record()
 	assert(record.direction == expected_direction)
 	boar.global_position = previous_position
+
+func _assert_runtime_drop_breaks(boar: BoarMonster, drop_group: Node, direction: Vector2) -> void:
+	drop_group.reset_group()
+	boar.global_position = boar.patrol_branch_point
+	await physics_frame
+	assert(not drop_group.broken_state)
+	var smash_record: Resource = ActionRecordScript.new(&"smash", direction, direction * boar.smash_speed, 0.2, &"REBITE_REPLAY")
+	boar.set_active_action_record(smash_record)
+	await physics_frame
+	assert(drop_group.broken_state)
+	boar.clear_active_action_record(smash_record)

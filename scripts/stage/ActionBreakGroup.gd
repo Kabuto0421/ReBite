@@ -63,14 +63,14 @@ func _build_runtime_tiles() -> void:
 	_break_area = TileGroupBuilderScript.build_area(self, _probe_parts(), 0, 5, "BreakSensor")
 	_break_area.body_entered.connect(_on_break_area_body_entered)
 
-# すでに検知範囲内にいる落石が加速した場合だけ再判定する。
+# すでに検知範囲内にいる敵や落石が行動を開始した場合も再判定する。
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint() or _break_area == null:
 		return
 	if broken_state and break_once:
 		return
 	for body in _break_area.get_overlapping_bodies():
-		if body.has_method("can_break_action_group") and _can_break_with(body):
+		if _can_break_with(body):
 			_break(body, _current_action_record(body))
 			return
 

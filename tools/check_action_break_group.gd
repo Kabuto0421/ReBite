@@ -66,6 +66,29 @@ func _run() -> void:
 	root.remove_child(floor_group)
 	floor_group.queue_free()
 	floor_dash_enemy.queue_free()
+
+	var smash_floor_group := ActionBreakGroupScript.new()
+	smash_floor_group.accepted_actions = [&"smash"]
+	smash_floor_group.direction_dot_threshold = 0.0
+	_add_part(smash_floor_group, "Rect_SmashFloor", Vector2.ZERO, Vector2(160, 32))
+	root.add_child(smash_floor_group)
+	await process_frame
+	await physics_frame
+
+	var smash_enemy := _FakeBodyEnemy.new()
+	smash_enemy.global_position = Vector2(80, -18)
+	root.add_child(smash_enemy)
+	await process_frame
+	await physics_frame
+	assert(not smash_floor_group.broken_state)
+	smash_enemy.record = ActionRecordScript.new(&"smash", Vector2.RIGHT, Vector2(120.0, 0.0), 0.3)
+	await physics_frame
+	assert(smash_floor_group.broken_state)
+
+	root.remove_child(smash_floor_group)
+	smash_floor_group.queue_free()
+	root.remove_child(smash_enemy)
+	smash_enemy.queue_free()
 	await process_frame
 	quit(0)
 
@@ -81,6 +104,23 @@ class _FakeEnemy:
 	extends Node2D
 
 	var record: Resource
+
+	func current_action_record() -> Resource:
+		return record
+
+class _FakeBodyEnemy:
+	extends CharacterBody2D
+
+	var record: Resource
+
+	func _init() -> void:
+		collision_layer = 4
+		collision_mask = 0
+		var shape_node := CollisionShape2D.new()
+		var shape := RectangleShape2D.new()
+		shape.size = Vector2(32, 48)
+		shape_node.shape = shape
+		add_child(shape_node)
 
 	func current_action_record() -> Resource:
 		return record
