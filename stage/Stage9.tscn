@@ -173,7 +173,7 @@ walk_speed = 72.0
 smash_range = 96.0
 smash_lane_y_tolerance = 40.0
 behavior_mode = 1
-patrol_smash_point = Vector2(600, 192)
+patrol_smash_point = Vector2(423, 192)
 patrol_turn_point = Vector2(900, 192)
 patrol_branch_point = Vector2(1120, 192)
 patrol_smash_target_path = NodePath("../TauntStake_TopA")
@@ -210,11 +210,11 @@ position = Vector2(1210, 392)
 can_kill_player = false
 
 [node name="SkullRockTargetA" parent="." unique_id=1809799375 instance=ExtResource("7_skull")]
-position = Vector2(1390, 416)
+position = Vector2(1660, 416)
 initial_dash_memory = 2
 
 [node name="SkullRockTargetB" parent="." unique_id=1247480455 instance=ExtResource("7_skull")]
-position = Vector2(1500, 416)
+position = Vector2(1740, 416)
 initial_dash_memory = 2
 
 [node name="SkullBottomVictimA" parent="." unique_id=1398871763 instance=ExtResource("7_skull")]

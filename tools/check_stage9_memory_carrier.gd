@@ -19,6 +19,8 @@ func _run() -> void:
 	var middle_drop: Node = scene.get_node("EditableGeometry/ActionBreakGroups/ActionBreakGroup_MiddleDrop")
 	var bottom_drop: Node = scene.get_node("EditableGeometry/ActionBreakGroups/ActionBreakGroup_BottomDrop")
 	var rock: Node = scene.get_node("Rockfall_Middle")
+	var skull_rock_target_a: Node2D = scene.get_node("SkullRockTargetA")
+	var skull_rock_target_b: Node2D = scene.get_node("SkullRockTargetB")
 	var hitbox_shape := boar_middle.get_node("AttackHitbox/CollisionShape2D").shape as RectangleShape2D
 
 	assert(scene.get_script().resource_path.ends_with("Stage9.gd"))
@@ -32,12 +34,14 @@ func _run() -> void:
 		assert(boar.patrol_route_open)
 		assert(boar.patrol_target_id == &"A")
 
-	assert(boar_top.patrol_smash_point == Vector2(600, 192))
+	assert(boar_top.patrol_smash_point == Vector2(423, 192))
 	assert(boar_middle.patrol_smash_point == Vector2(600, 416))
 	assert(boar_bottom.patrol_smash_point == Vector2(600, 640))
 	assert(boar_top.patrol_smash_target_path == NodePath("../TauntStake_TopA"))
 	assert(boar_middle.patrol_smash_target_path == NodePath("../TauntStake_MiddleA"))
 	assert(boar_bottom.patrol_smash_target_path == NodePath("../TauntStake_BottomA"))
+	assert(skull_rock_target_a.global_position.x >= 1600.0)
+	assert(skull_rock_target_b.global_position.x >= 1700.0)
 	assert(not boar_top.memory_tag_urgency_enabled)
 	assert(not boar_middle.memory_tag_urgency_enabled)
 	assert(not boar_bottom.memory_tag_urgency_enabled)
@@ -53,10 +57,10 @@ func _run() -> void:
 	_assert_routes_to_branch(boar_top)
 	_assert_routes_to_branch(boar_middle)
 	_assert_routes_to_branch(boar_bottom)
-	_assert_target_smash_direction(boar_top, Vector2.LEFT)
+	_assert_target_smash_direction(boar_top, Vector2.RIGHT)
 	_assert_target_smash_direction(boar_middle, Vector2.RIGHT)
 	_assert_target_smash_direction(boar_bottom, Vector2.LEFT)
-	_assert_drop_breaks(boar_top, top_drop, Vector2.LEFT)
+	_assert_drop_breaks(boar_top, top_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_middle, middle_drop, Vector2.RIGHT)
 	_assert_drop_breaks(boar_bottom, bottom_drop, Vector2.LEFT)
 
