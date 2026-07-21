@@ -22,7 +22,6 @@ func _ready() -> void:
 	for group in execution_groups:
 		if group.has_signal("broken"):
 			group.broken.connect(func(_enemy: Node, _record: Resource):
-				_resolve_execution_group(group)
 				shake_camera(7.0, 0.12)
 			)
 
@@ -51,18 +50,3 @@ func _set_execution_route_visible(open: bool) -> void:
 		lantern.modulate = lantern_color
 	for group in execution_groups:
 		group.modulate = floor_color
-
-# 落とし床に乗っている敵が物理挙動で残った場合も、全滅型ステージが詰まらないよう処理する。
-func _resolve_execution_group(group: Node) -> void:
-	var names: Array[StringName] = []
-	match group.name:
-		&"ActionBreakGroup_TopDrop":
-			names = [&"BoarTop"]
-		&"ActionBreakGroup_MiddleDrop":
-			names = [&"BoarMiddle"]
-		&"ActionBreakGroup_BottomDrop":
-			names = [&"BoarBottom", &"SkullBottomVictimA", &"SkullBottomVictimB"]
-	for enemy_name in names:
-		var enemy := get_node_or_null(NodePath(String(enemy_name)))
-		if enemy != null and enemy.has_method("die"):
-			enemy.die()

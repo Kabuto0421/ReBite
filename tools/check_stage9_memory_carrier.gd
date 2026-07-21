@@ -108,6 +108,7 @@ func _assert_runtime_drop_breaks(boar: BoarMonster, drop_group: Node, direction:
 	boar.set_active_action_record(smash_record)
 	await physics_frame
 	assert(drop_group.broken_state)
+	assert(boar.current_state_name() != &"Dying")
 	boar.clear_active_action_record(smash_record)
 
 func _assert_attack_hitbox_overlaps_break_sensor(boar: BoarMonster, drop_group: Node) -> void:

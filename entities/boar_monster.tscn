@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://cfcpm32gkxd0y" path="res://scripts/states/enemy/EnemyDyingState.gd" id="9_dying"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_boar"]
-size = Vector2(76, 62)
+size = Vector2(76, 44)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_smash_hitbox"]
 size = Vector2(58, 96)
@@ -28,7 +28,7 @@ color = Color(0.0156863, 0.0117647, 0.027451, 0.55)
 polygon = PackedVector2Array(-44, 0, -31, -5, 0, -8, 31, -5, 44, 0, 31, 5, 0, 8, -31, 5)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=291081072]
-position = Vector2(0, -13)
+position = Vector2(0, -22)
 shape = SubResource("RectangleShape2D_boar")
 
 [node name="AttackHitbox" type="Area2D" parent="." unique_id=85342688]
