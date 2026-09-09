@@ -1,52 +1,25 @@
-# 2026-07-21: 三層のBoar搬送と岩押しを組み合わせる記憶搬送路ステージ。
+# 2026-08-19: SkullMonsterを人数土台へ集めて一斉に落とすステージ。
 extends "res://scripts/stage/StageBase.gd"
 
-var patrol_boars: Array[Node] = [] # Aで作ったSMASH記憶をC地点へ運ぶBoar一覧。
-var branch_lanterns: Array[Node] = [] # C地点を示す誘導灯一覧。
-var execution_groups: Array[Node] = [] # C地点で再演SMASHにより崩れる床一覧。
+var count_platform: Node # 5体到達で崩壊する人数土台。
 
-# 共通初期化後、各Boarの巡回路をC地点まで開く。
+# 共通初期化後、Stage9専用ギミックを接続する。
 func _ready() -> void:
 	super._ready()
-	patrol_boars = _collect_existing_nodes(["BoarTop", "BoarMiddle", "BoarBottom"])
-	branch_lanterns = _collect_existing_nodes(["GuidanceLantern_TopC", "GuidanceLantern_MiddleC", "GuidanceLantern_BottomC"])
-	execution_groups = _collect_existing_nodes([
-		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_TopDrop",
-		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_MiddleDrop",
-		"EditableGeometry/ActionBreakGroups/ActionBreakGroup_BottomDrop",
-	])
-	_set_execution_route_visible(true)
-	for boar in patrol_boars:
-		if boar.has_method("open_patrol_branch"):
-			boar.open_patrol_branch()
-	for group in execution_groups:
-		if group.has_signal("broken"):
-			group.broken.connect(func(_enemy: Node, _record: Resource):
-				shake_camera(7.0, 0.12)
-			)
+	count_platform = get_node_or_null("CountBreakPlatform")
+	if count_platform != null and count_platform.has_signal("collapsed"):
+		count_platform.collapsed.connect(_on_count_platform_collapsed)
 
+# Stage9用の暗い背景を作る。
 func _build_world() -> void:
 	var background := ColorRect.new()
-	background.color = Color(0.052, 0.06, 0.082)
-	background.size = Vector2(5200, 2200)
-	background.position = Vector2(-1500, -760)
+	background.color = Color(0.045, 0.052, 0.078)
+	background.size = Vector2(4200, 2200)
+	background.position = Vector2(-1200, -760)
 	background.z_index = -20
 	add_child(background)
 
-# 指定したNodePathのうち存在するものだけ集める。
-func _collect_existing_nodes(paths: Array[String]) -> Array[Node]:
-	var nodes: Array[Node] = []
-	for path in paths:
-		var node := get_node_or_null(path)
-		if node != null:
-			nodes.append(node)
-	return nodes
-
-# 処刑地点として使うCルートの視認性を切り替える。
-func _set_execution_route_visible(open: bool) -> void:
-	var lantern_color := Color(1.0, 1.0, 1.0, 1.0) if open else Color(0.45, 0.55, 0.70, 0.45)
-	var floor_color := Color(1.0, 0.92, 0.70, 1.0) if open else Color(0.62, 0.62, 0.70, 0.72)
-	for lantern in branch_lanterns:
-		lantern.modulate = lantern_color
-	for group in execution_groups:
-		group.modulate = floor_color
+# 人数土台が崩れた瞬間に手応えを足す。
+func _on_count_platform_collapsed(_current_count: int) -> void:
+	shake_camera(14.0, 0.18)
+	play_sfx(&"action_break_block")
